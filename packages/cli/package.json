@@ -1,0 +1,24 @@
+{
+  "name": "@skillhub/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "skill-hub 命令行：skillhub scan / list / search / show / roots",
+  "bin": {
+    "skillhub": "dist/cli.js"
+  },
+  "main": "dist/cli.js",
+  "types": "dist/cli.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/cli.d.ts",
+      "import": "./dist/cli.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@skillhub/core": "*",
+    "commander": "^12.1.0"
+  }
+}

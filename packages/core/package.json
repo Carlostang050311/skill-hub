@@ -1,0 +1,20 @@
+{
+  "name": "@skillhub/core",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "skill-hub 核心：多目录扫描、frontmatter 解析、内容指纹、静态质量信号、依赖图谱",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "gray-matter": "^4.0.3"
+  }
+}
