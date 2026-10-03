@@ -1,0 +1,5 @@
+node_modules/
+dist/
+.skillhub/
+*.log
+.DS_Store
