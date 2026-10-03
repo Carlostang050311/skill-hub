@@ -1,0 +1,23 @@
+{
+  "name": "skill-hub",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "本地优先的 Agent Skill 管理与评测平台",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @skillhub/core && npm run build -w @skillhub/cli",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "skillhub": "node packages/cli/dist/cli.js"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}
