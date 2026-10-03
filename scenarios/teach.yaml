@@ -1,0 +1,10 @@
+skill: teach
+should_trigger:
+  - 教我怎么用 git rebase
+  - 我想学 React hooks，从零开始
+  - 给我讲讲这个仓库的整体架构
+should_not_trigger:
+  - 直接帮我把这个功能写完
+  - 帮我修复这个报错
+  - 把这段代码重构一下
+notes: 学习/讲解意图触发；直接执行类请求不触发

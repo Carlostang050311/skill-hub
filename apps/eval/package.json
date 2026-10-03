@@ -1,0 +1,24 @@
+{
+  "name": "@skillhub/eval",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "skill-hub 评测框架：scenario YAML + 双后端跑批（ZCode 子代理 / OpenAI 兼容 API）+ SQLite 报告入库",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "skillhub-eval": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@skillhub/core": "*",
+    "yaml": "^2.6.1"
+  }
+}

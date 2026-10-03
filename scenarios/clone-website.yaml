@@ -1,0 +1,10 @@
+skill: clone-website
+should_trigger:
+  - 把这个网站完整克隆成一个 Next.js 项目
+  - 复刻 example.com 的首页布局和内容
+  - 我想要一个这个站点的可运行副本
+should_not_trigger:
+  - 帮我把项目部署到 Vercel
+  - 给我的网站做一次 SEO 体检
+  - 抓取这个网站的接口数据分析一下
+notes: 触发词围绕 clone/replicate/rebuild；部署与分析不算

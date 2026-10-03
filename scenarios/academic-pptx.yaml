@@ -1,0 +1,10 @@
+skill: academic-pptx
+should_trigger:
+  - 帮我把这篇论文做成 15 分钟学术报告的幻灯片
+  - 我下周毕业答辩，帮我做答辩 PPT
+  - 组会要讲文献，帮我做一份 seminar slides
+should_not_trigger:
+  - 给我们的 SaaS 产品做一个营销落地页
+  - 做一张小红书封面图
+  - 把这些数据画成图表插入 Word
+notes: 英文 skill，中文学术场景输入应能命中 description 里的 academic context

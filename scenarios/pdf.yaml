@@ -1,0 +1,10 @@
+skill: pdf
+should_trigger:
+  - 帮我把这份报告排版成 PDF
+  - 读取这个 PDF，检查一下排版有没有问题
+  - 把这几页 PDF 合并并压缩体积
+should_not_trigger:
+  - 把这个网页加到浏览器书签
+  - 帮我用 Word 写一份合同模板
+  - 从这个 CSV 提取数据
+notes: PDF 读取/生成/审查；其他文档格式不触发

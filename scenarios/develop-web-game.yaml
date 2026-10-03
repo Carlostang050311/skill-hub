@@ -1,0 +1,10 @@
+skill: develop-web-game
+should_trigger:
+  - 帮我做一个网页版贪吃蛇，边改边测
+  - 我的 HTML5 小游戏碰撞检测有 bug，帮我建个可靠的调试循环
+  - 用 Playwright 给这个 web game 搭一个自动测试脚本
+should_not_trigger:
+  - 开发一个原生 Android 小游戏
+  - 帮我写一份游戏策划案文档
+  - 用 Unity 做一个 3D 游戏
+notes: 限定 HTML/JS web game + 开发测试循环；原生/策划案不触发

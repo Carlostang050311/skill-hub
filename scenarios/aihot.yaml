@@ -1,0 +1,11 @@
+skill: aihot
+should_trigger:
+  - 今天 AI 圈有什么新闻？
+  - 来一份 AI 日报
+  - OpenAI 最近发布了什么
+  - 看看最近一周有哪些值得读的 AI 论文
+should_not_trigger:
+  - 帮我写一个 Python 快排
+  - 把这篇文章排版成 PPT
+  - 总结一下我上周的项目进展
+notes: 中文 AI 资讯查询，触发域清晰；注意与通用编程请求区分

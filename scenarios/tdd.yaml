@@ -1,0 +1,10 @@
+skill: tdd
+should_trigger:
+  - 用测试驱动的方式给这个模块加一个新功能
+  - red-green-refactor 具体怎么实践？
+  - 这个 bug 先帮我写一个能失败的测试再修
+should_not_trigger:
+  - 直接帮我把这个功能实现了，不用写测试
+  - 现有测试跑挂了帮我修一下测试环境
+  - 解释一下单元测试和集成测试的概念区别
+notes: 强调 test-first 意图；纯概念解释不该触发
