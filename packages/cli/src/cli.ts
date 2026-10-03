@@ -5,10 +5,17 @@ import { pathToFileURL } from "node:url";
 import {
   defaultRoots,
   findConflicts,
+  installSkill,
+  isTargetKind,
+  outdatedReport,
+  packSkill,
   parseSkillSource,
   scanAll,
+  targetDirFor,
+  uninstallSkill,
   type ScanRoot,
   type SkillRecord,
+  type TargetKind,
 } from "@skillhub/core";
 
 const VERSION = "0.1.0";
@@ -213,7 +220,93 @@ export async function main(argv: string[]): Promise<void> {
     }
   });
 
+  const install = program.command("install <name>").description("把 skill 安装到目标 agent 目录");
+  install
+    .requiredOption("--to <kind-or-dir>", "目标：agents / claude / codex 或目录路径")
+    .option("--from <source>", "指定来源（默认 agents > claude > codex 优先）")
+    .option("--force", "目标内容不同时覆盖")
+    .option("--dry-run", "只展示将执行的操作，不写盘")
+    .option("--home <dir>", "覆盖用户主目录")
+    .option("--json", "JSON 输出");
+  install.action((name: string, opts: { to: string; from?: string; force?: boolean; dryRun?: boolean; home?: string; json?: boolean }) => {
+    const to = resolveTarget(opts.to, opts.home);
+    const result = installSkill(scanAll(defaultRoots(opts.home)).skills, name, {
+      to, from: opts.from, force: opts.force, dryRun: opts.dryRun, home: opts.home,
+    });
+    if (opts.json) {
+      printJson(result);
+      return;
+    }
+    if (result.status === "conflict") {
+      console.error(`目标已有不同内容：${result.targetPath}\n  来源 hash ${result.sourceHash} · 目标 hash ${result.targetHash}\n  加 --force 覆盖`);
+      process.exitCode = 1;
+      return;
+    }
+    if (result.status === "identical") {
+      console.log(`已是最新：${result.targetPath}`);
+      return;
+    }
+    console.log(`${result.dryRun ? "[dry-run] 将安装" : "已安装"}：${name}（${result.filesCopied} 个文件）→ ${result.targetPath}`);
+  });
+
+  const uninstall = program.command("uninstall <name>").description("从目标 agent 目录移除 skill");
+  uninstall
+    .requiredOption("--from <kind>", "目标：agents / claude / codex")
+    .option("--home <dir>", "覆盖用户主目录")
+    .option("--json", "JSON 输出");
+  uninstall.action((name: string, opts: { from: string; home?: string; json?: boolean }) => {
+    if (!isTargetKind(opts.from)) {
+      console.error(`--from 只支持 agents / claude / codex`);
+      process.exitCode = 1;
+      return;
+    }
+    const removed = uninstallSkill(scanAll(defaultRoots(opts.home)).skills, name, opts.from, opts.home);
+    if (opts.json) {
+      printJson({ name, from: opts.from, removed });
+      return;
+    }
+    console.log(removed ? `已移除：${name} ← ${targetDirFor(opts.from, opts.home)}` : `目标没有这个 skill：${name}`);
+  });
+
+  const outdated = program.command("outdated").description("同名多副本的内容漂移与落后检测");
+  outdated.option("--home <dir>", "覆盖用户主目录").option("--json", "JSON 输出");
+  outdated.action((opts: { home?: string; json?: boolean }) => {
+    const entries = outdatedReport(scanAll(defaultRoots(opts.home)).skills);
+    if (opts.json) {
+      printJson(entries);
+      return;
+    }
+    if (entries.length === 0) {
+      console.log("没有落后的副本：漂移组不存在，全部同步");
+      return;
+    }
+    for (const e of entries) {
+      console.log(`${e.name}`);
+      console.log(`  最新：[${e.newest.source}] ${e.newest.path}`);
+      for (const l of e.lagging) {
+        console.log(`  落后：[${l.source}] ${l.path}`);
+      }
+      console.log(`  对齐：skillhub install ${e.name} --from ${e.newest.source} --to ${e.lagging.map((l) => l.source).join("|")} --force`);
+    }
+  });
+
+  const pack = program.command("pack <name>").description("导出可发布包（干净目录 + manifest，推 Git 仓库即可被 skills.sh 索引）");
+  pack.option("--out <dir>", "输出根目录", "dist").option("--home <dir>", "覆盖用户主目录").option("--json", "JSON 输出");
+  pack.action((name: string, opts: { out: string; home?: string; json?: boolean }) => {
+    const result = packSkill(scanAll(defaultRoots(opts.home)).skills, name, opts.out);
+    if (opts.json) {
+      printJson(result);
+      return;
+    }
+    console.log(`已导出：${result.outDir}（${result.files} 个文件）\n  manifest: ${result.manifestPath}`);
+  });
+
   await program.parseAsync(argv, { from: "user" });
+}
+
+function resolveTarget(value: string, home?: string): TargetKind | { dir: string } {
+  if (isTargetKind(value)) return value;
+  return { dir: value };
 }
 
 function isDirectRun(): boolean {

@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { parseSkillFile } from "@skillhub/core";
+import { isTargetKind, parseSkillFile } from "@skillhub/core";
 import { Badge, Card, Mono, SectionTitle } from "@/components/ui";
+import { InstallButton } from "@/components/InstallButton";
 import { getScan } from "@/lib/data";
 import { reverseMentions, reverseReferences } from "@/lib/graph";
 
@@ -43,8 +44,7 @@ export default async function SkillDetailPage({ params }: { params: Promise<{ na
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
-          <SectionTitle>引用与提及</SectionTitle>
-          {outbound.length === 0 && outboundMentions.length === 0 ? (
+          <SectionTitle>引用与提及</SectionTitle>          {outbound.length === 0 && outboundMentions.length === 0 ? (
             <p className="text-xs text-slate-500">没有指向库内其他 skill 的引用或提及</p>
           ) : (
             <div className="space-y-2">
@@ -99,6 +99,24 @@ export default async function SkillDetailPage({ params }: { params: Promise<{ na
           )}
         </Card>
       </div>
+
+      <Card>
+        <SectionTitle hint="连同资源文件一起复制；插件缓存来源也可作为安装源">安装到其他 agent 目录</SectionTitle>
+        <div className="flex flex-wrap gap-4">
+          {(["agents", "claude", "codex"] as const).map((kind) => {
+            const existing = hits.find((h) => h.source === kind);
+            const same = existing != null && existing.hash === hits[0]?.hash;
+            return (
+              <div key={kind} className="flex flex-col gap-1">
+                <InstallButton name={name} to={kind} force={existing != null && !same} label={`装到 ${kind}`} />
+                <span className="text-[10px] text-slate-600">
+                  {existing == null ? "未安装" : same ? "已是同内容" : "已有不同内容，将覆盖"}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
 
       {hits.map((h) => {
         const { body } = parseSkillFile(h.skillPath);

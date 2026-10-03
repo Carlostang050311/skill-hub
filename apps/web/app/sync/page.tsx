@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { findConflicts } from "@skillhub/core";
+import { findConflicts, isTargetKind, outdatedReport } from "@skillhub/core";
 import { Badge, Card, Mono, SectionTitle, Stat } from "@/components/ui";
+import { InstallButton } from "@/components/InstallButton";
 import { getScan } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +14,7 @@ export default function SyncPage() {
   });
   const diverged = conflicts.filter((g) => !g.identical);
   const identical = conflicts.filter((g) => g.identical);
+  const outdated = new Map(outdatedReport(scan.skills).map((e) => [e.name, e]));
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -46,10 +48,25 @@ export default function SyncPage() {
                   </Link>
                 </td>
                 <td className="px-4 py-2.5">
-                  <div className="flex flex-wrap gap-1.5">
-                    {g.occurrences.map((o) => (
-                      <Badge key={o.id}>{o.source}</Badge>
-                    ))}
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                    {g.occurrences.map((o) => {
+                      const entry = outdated.get(g.name);
+                      const isNewest = entry?.newest.source === o.source;
+                      const isLagging = entry?.lagging.some((l) => l.source === o.source) ?? false;
+                      const writable = isTargetKind(o.source);
+                      return (
+                        <span key={o.id} className="inline-flex items-center gap-1.5">
+                          <Badge tone={isNewest ? "emerald" : "slate"}>
+                            {o.source}
+                            {isNewest ? " · 最新" : ""}
+                          </Badge>
+                          {isLagging && writable ? (
+                            <InstallButton name={g.name} to={o.source} from={entry?.newest.source} force label="对齐最新" tone="violet" />
+                          ) : null}
+                          {isLagging && !writable ? <span className="text-[10px] text-slate-600">随插件更新</span> : null}
+                        </span>
+                      );
+                    })}
                   </div>
                 </td>
                 <td className="px-4 py-2.5">
@@ -79,8 +96,8 @@ export default function SyncPage() {
         <SectionTitle>说明</SectionTitle>
         <ul className="list-inside list-disc space-y-1 text-xs text-slate-400">
           <li>「一致」表示同名 skill 在多个目录内容完全相同（指纹相同），通常是有意多端部署。</li>
-          <li>「漂移」表示同名但内容不同——一边改过另一边没同步，用哪个取决于 agent 加载哪个目录。</li>
-          <li>一键对齐、安装与更新将在 Phase 3 提供，当前只做检测与展示。</li>
+          <li>「漂移」表示同名但内容不同——按文件修改时间标出「最新」副本，「对齐最新」会把最新内容覆盖到落后副本。</li>
+          <li>插件缓存目录由插件系统版本管理，只作来源不作安装目标。</li>
         </ul>
       </Card>
     </div>
