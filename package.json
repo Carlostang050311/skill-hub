@@ -9,13 +9,14 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "npm run build -w @skillhub/core && npm run build -w @skillhub/cli",
+    "build": "npm run build -w @skillhub/core && npm run build -w @skillhub/cli && npm run build -w @skillhub/web",
     "test": "vitest run",
     "test:watch": "vitest",
     "skillhub": "node packages/cli/dist/cli.js"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
+    "playwright": "^1.63.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0",
     "vitest": "^2.1.0"

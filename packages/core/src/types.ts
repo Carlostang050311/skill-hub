@@ -48,8 +48,10 @@ export interface SkillRecord {
   /** 归一化内容（LF、去行尾空白）的 sha256 前 16 位 */
   hash: string;
   quality: QualitySignals;
-  /** 正文引用的其他 skill 名（未与已知名单过滤） */
+  /** 正文引用的其他 skill 名（`xxx/SKILL.md` 链接与 `[[xxx]]`，未过滤） */
   references: string[];
+  /** 正文提及的库内其他 skill 名（词边界匹配，长度 ≥4，不含自身） */
+  mentions: string[];
   scannedAt: string;
 }
 

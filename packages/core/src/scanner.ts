@@ -3,13 +3,35 @@ import os from "node:os";
 import path from "node:path";
 import { extractReferences } from "./graph.js";
 import { hashContent } from "./hash.js";
-import { parseSkillSource } from "./parser.js";
+import { parseSkillSource, type ParsedSkill } from "./parser.js";
 import { computeQuality } from "./quality.js";
 import type { RootReport, ScanResult, ScanRoot, SkillRecord } from "./types.js";
 
 const SKIP_DIRS = new Set(["node_modules", ".git", ".svn", "dist", ".next", "coverage", "__pycache__"]);
 const MAX_RESOURCE_FILES = 500;
 const VERSION_RE = /(?:^|\/)(\d+\.\d+\.\d+(?:[-+][\w.-]+)?)(?:\/|$)/;
+/** 提及检测的最短名字长度，避开 qa、ai 这类高频短词 */
+const MENTION_MIN_NAME_LEN = 4;
+
+function escapeRegex(name: string): string {
+  return name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** 第二遍：在正文中按词边界找库内其他 skill 名（软引用信号） */
+function computeMentions(skills: SkillRecord[], bodies: Map<string, string>): void {
+  const names = [...new Set(skills.map((s) => s.name))].filter((n) => n.length >= MENTION_MIN_NAME_LEN);
+  if (names.length === 0) return;
+  const pattern = new RegExp(`(?<![a-z0-9-])(${names.map(escapeRegex).join("|")})(?![a-z0-9-])`, "g");
+  for (const skill of skills) {
+    const body = bodies.get(skill.id);
+    if (!body) continue;
+    const found = new Set<string>();
+    for (const m of body.matchAll(pattern)) {
+      if (m[1] && m[1] !== skill.name) found.add(m[1]);
+    }
+    skill.mentions = [...found].sort();
+  }
+}
 
 /** 本机默认扫描目录（按 agent 划分来源） */
 export function defaultRoots(home: string = os.homedir()): ScanRoot[] {
@@ -87,9 +109,8 @@ function asString(value: unknown): string {
   return String(value);
 }
 
-function buildRecord(root: ScanRoot, skillPath: string, scannedAt: string): SkillRecord {
-  const raw = fs.readFileSync(skillPath, "utf8");
-  const { frontmatter, body } = parseSkillSource(raw);
+function buildRecord(root: ScanRoot, skillPath: string, raw: string, parsed: ParsedSkill, scannedAt: string): SkillRecord {
+  const { frontmatter, body } = parsed;
   const skillDir = path.dirname(skillPath);
   const dirName = path.basename(skillDir);
   const relativeId = path.relative(root.path, skillDir).split(path.sep).join("/");
@@ -117,6 +138,7 @@ function buildRecord(root: ScanRoot, skillPath: string, scannedAt: string): Skil
     hash: hashContent(raw),
     quality: computeQuality({ frontmatter, body, dirName, files, skillDir }),
     references: extractReferences(body),
+    mentions: [],
     scannedAt,
   };
 }
@@ -125,6 +147,7 @@ function buildRecord(root: ScanRoot, skillPath: string, scannedAt: string): Skil
 export function scanAll(roots: ScanRoot[]): ScanResult {
   const scannedAt = new Date().toISOString();
   const skills: SkillRecord[] = [];
+  const bodies = new Map<string, string>();
   const reports: RootReport[] = [];
   for (const root of roots) {
     const exists = fs.existsSync(root.path);
@@ -133,7 +156,11 @@ export function scanAll(roots: ScanRoot[]): ScanResult {
     if (exists) {
       for (const skillPath of listSkillFiles(root.path, root.maxDepth ?? 5)) {
         try {
-          skills.push(buildRecord(root, skillPath, scannedAt));
+          const raw = fs.readFileSync(skillPath, "utf8");
+          const parsed = parseSkillSource(raw);
+          const record = buildRecord(root, skillPath, raw, parsed, scannedAt);
+          skills.push(record);
+          bodies.set(record.id, parsed.body);
           count += 1;
         } catch {
           failedFiles.push(skillPath);
@@ -150,5 +177,6 @@ export function scanAll(roots: ScanRoot[]): ScanResult {
       failedFiles,
     });
   }
+  computeMentions(skills, bodies);
   return { skills, roots: reports, scannedAt };
 }

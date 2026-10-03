@@ -8,8 +8,8 @@ export default defineConfig({
     },
   },
   test: {
-    include: ["packages/**/*.test.ts"],
-    exclude: ["**/node_modules/**", "**/dist/**"],
+    include: ["packages/**/*.test.ts", "apps/web/lib/**/*.test.ts"],
+    exclude: ["**/node_modules/**", "**/dist/**", "**/.next/**"],
     environment: "node",
   },
 });

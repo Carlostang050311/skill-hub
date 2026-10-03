@@ -1,5 +1,7 @@
 node_modules/
 dist/
+.next/
 .skillhub/
+apps/web/screenshots/
 *.log
 .DS_Store

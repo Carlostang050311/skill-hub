@@ -49,6 +49,24 @@ describe("scanAll", () => {
     expect(alphaAgents?.files).toContain("scripts/run.py");
   });
 
+  it("正文按词边界提及库内其他 skill（≥4 字符）", () => {
+    const home = newTempDir();
+    writeSkill(
+      home,
+      ".agents/skills/writer",
+      "---\nname: writer\ndescription: 写作\n---\n配合 test-driven-development 使用，也参考 web-gui-tester。不是 qa，也不是 pptx 短词。test-driven-development 再提一次去重。\n",
+    );
+    writeSkill(home, ".agents/skills/test-driven-development", "---\nname: test-driven-development\ndescription: tdd\n---\n" + "T".repeat(150));
+    writeSkill(home, ".agents/skills/web-gui-tester", "---\nname: web-gui-tester\ndescription: gui\n---\n" + "W".repeat(150));
+    writeSkill(home, ".agents/skills/unrelated", "---\nname: unrelated\ndescription: x\n---\n" + "U".repeat(150));
+
+    const result = scanAll(defaultRoots(home));
+    const writer = result.skills.find((s) => s.name === "writer");
+    expect(writer?.mentions).toEqual(["test-driven-development", "web-gui-tester"]);
+    const tdd = result.skills.find((s) => s.name === "test-driven-development");
+    expect(tdd?.mentions).toEqual([]);
+  });
+
   it("同名跨目录且内容漂移可被分组发现", () => {
     const home = newTempDir();
     writeSkill(home, ".agents/skills/same", "---\nname: same\ndescription: v1\n---\n" + "X".repeat(150));
