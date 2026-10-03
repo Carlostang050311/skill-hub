@@ -1,0 +1,9 @@
+skill: ai-desk-card
+should_trigger:
+  - 把今天的天气和待办推到我的墨水屏卡片上
+  - 刚拿到 M5Paper，帮我配 Wi-Fi 刷固件
+  - 让卡片每小时自动刷新一次
+should_not_trigger:
+  - 帮我开发一款墨水屏产品
+  - 给我的手机推送一条通知
+notes: 实体墨水屏卡片的显示/配置/定时推送；泛推送与产品开发不触发

@@ -1,0 +1,9 @@
+skill: NanoBanana-PPT-Skills
+should_trigger:
+  - 用 AI 生成一套 PPT 页面图片
+  - 帮我做一个带智能转场的图片版 PPT
+  - 把这份大纲变成可以自动播放的 PPT 视频
+should_not_trigger:
+  - 用 PowerPoint 帮我打开这个文件
+  - 只帮我写 PPT 大纲文字，不生成图片
+notes: 该 skill 的 frontmatter description 为空——触发评测将暴露这一点

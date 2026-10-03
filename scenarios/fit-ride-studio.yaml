@@ -1,0 +1,9 @@
+skill: fit-ride-studio
+should_trigger:
+  - 分析我这个周末骑行的 FIT 文件
+  - 对比两次跑步活动的数据差异
+  - 把这条徒步路线导出成可分享的路线图
+should_not_trigger:
+  - 帮我制定下个月的训练计划
+  - 我的码表固件升级失败了
+notes: 只管 FIT/KML 轨迹分析；训练规划与硬件问题不触发

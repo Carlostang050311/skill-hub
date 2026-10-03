@@ -1,0 +1,10 @@
+skill: logo-generator
+should_trigger:
+  - 给我的产品设计一个 logo
+  - 生成几个不同风格的 logo 概念给我选
+  - 做一套 logo 展示图并导出 SVG 和 PNG
+should_not_trigger:
+  - 给这张照片抠图去背景
+  - 帮我设计这套 PPT 的版式
+  - 画一张插画风格的宣传海报
+notes: 只管 logo 与展示图；泛图像任务不触发

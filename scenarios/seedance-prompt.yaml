@@ -1,0 +1,9 @@
+skill: seedance-prompt
+should_trigger:
+  - 帮我写一段 Seedance 产品动画提示词
+  - 生成 15 秒一镜到底的 motion graphics 提示词
+  - 用垫图模式为我们的产品写宣传动画提示词
+should_not_trigger:
+  - 直接帮我剪一条成品宣传视频
+  - 写一份分镜脚本表格
+notes: 只产出提示词；成片剪辑与脚本表不触发

@@ -1,0 +1,10 @@
+skill: document-illustrator
+should_trigger:
+  - 为这篇文章的每个核心要点生成配图
+  - 给我的文档做一张封面图
+  - 分析这篇笔记的结构，按主题配插图
+should_not_trigger:
+  - 直接帮我把这篇文章写完
+  - 把这份文档转成 PDF
+  - 给视频画面配字幕
+notes: 文档→配图；写作本身与格式转换不触发

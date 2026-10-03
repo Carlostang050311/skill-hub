@@ -1,0 +1,10 @@
+skill: guizang-product-video-skill
+should_trigger:
+  - 给我们的 App 新版本做一支更新宣传片
+  - 用代码做一支产品功能宣传视频，配上原创配乐
+  - 做一支 changelog 宣传片
+should_not_trigger:
+  - 用手机拍一段产品实拍视频
+  - 只帮我写产品宣传文案，不做成片
+  - 给这段已经拍好的视频加字幕
+notes: 代码驱动的宣传片制作；实拍/纯文案/后期加工不触发

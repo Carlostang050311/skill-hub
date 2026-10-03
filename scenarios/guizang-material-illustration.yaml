@@ -1,0 +1,11 @@
+skill: guizang-material-illustration
+should_trigger:
+  - 给这篇科普文章画一组带字解释图
+  - 把这个数据图表美化成 3D 材质风格
+  - 帮我做汇报用的内容配图
+  - 给小学课文配一组解释插画
+should_not_trigger:
+  - 帮我把视频剪短一点
+  - 直接帮我写这篇文章
+  - 给我的产品生成一个 logo
+notes: 解释图/图表美化/内容配图；与 logo、视频剪辑区分

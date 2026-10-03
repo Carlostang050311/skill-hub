@@ -1,0 +1,9 @@
+skill: claude-to-im
+should_trigger:
+  - 把当前会话桥接到飞书，我要在手机上跟你聊
+  - 启动 claude-to-im 后台服务
+  - 消息推送不工作了，帮我诊断一下
+should_not_trigger:
+  - 帮我从零开发一个 Telegram bot 程序
+  - 用飞书开放平台的 SDK 写一个 webhook 集成
+notes: 只管桥接守护进程的启停配置诊断；独立 bot 开发是普通编程任务

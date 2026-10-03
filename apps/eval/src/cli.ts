@@ -99,12 +99,14 @@ export async function main(argv: string[]): Promise<void> {
   addGlobal(ingest);
   ingest
     .option("--scenarios <dir>", "scenario YAML 目录", "scenarios")
+    .option("--names <list>", "只评这些 skill（逗号分隔，与 plan 的过滤一致）")
     .option("--jobs <file>", "作业 JSONL", ".skillhub/eval-jobs.jsonl")
     .option("--results <file>", "结果 JSONL（每行 {id, raw}）", ".skillhub/eval-results.jsonl")
     .option("--model <id>", "实际执行的模型标注", "glm-5.3-flash");
   ingest.action(
-    (opts: { scenarios: string; jobs: string; results: string; model: string; db: string; home?: string; json?: boolean }) => {
-      const scenarios = loadScenarios(opts.scenarios);
+    (opts: { scenarios: string; names?: string; jobs: string; results: string; model: string; db: string; home?: string; json?: boolean }) => {
+      const wanted = opts.names ? new Set(opts.names.split(",").map((s) => s.trim()).filter(Boolean)) : null;
+      const scenarios = loadScenarios(opts.scenarios).filter((s) => !wanted || wanted.has(s.skill));
       const jobs = fs
         .readFileSync(opts.jobs, "utf8")
         .split("\n")

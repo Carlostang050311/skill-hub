@@ -1,0 +1,11 @@
+skill: guizang-social-card-skill
+should_trigger:
+  - 帮我做一组小红书图文卡片
+  - 把这篇文章转成 Live Photo 实况拼图
+  - 给公众号文章配 21:9 加 1:1 的封面图
+  - 做一组杂志风的社交卡片图
+should_not_trigger:
+  - 帮我剪一段短视频
+  - 只写一篇小红书文案，不用配图
+  - 给这份 PPT 排版
+notes: 覆盖图文卡片、Live Photo、公众号封面等核心触发词

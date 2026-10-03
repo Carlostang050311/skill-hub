@@ -1,0 +1,8 @@
+skill: video-wrapper
+should_trigger:
+  - 给这段访谈视频加综艺风格的花字特效
+  - 分析字幕内容，给这期视频加人物条和章节标题
+should_not_trigger:
+  - 帮我从头把这个视频剪短
+  - 给这段视频调色
+notes: 特效包装（分析建议→审批→渲染）；剪辑与调色不触发

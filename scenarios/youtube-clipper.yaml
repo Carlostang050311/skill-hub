@@ -1,0 +1,10 @@
+skill: youtube-clipper
+should_trigger:
+  - 下载这个 YouTube 视频并剪出精彩片段
+  - 把这个视频的字幕翻译成中英双语并烧录进去
+  - 帮我把这个长视频按内容切成分章节的短视频
+should_not_trigger:
+  - 帮我把本地视频转码成 MP4
+  - 给我自己录的课程加中文字幕
+  - 只下载这个 YouTube 视频，不用剪辑
+notes: 下载+分析+剪辑+双语字幕是整体流程；纯转码或纯下载不算
