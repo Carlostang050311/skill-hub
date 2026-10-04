@@ -1,16 +1,24 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { pathToFileURL } from "node:url";
 import {
   defaultRoots,
+  discoverSkills,
   findConflicts,
+  hashDir,
   installSkill,
   isTargetKind,
+  loadOrigins,
   outdatedReport,
   packSkill,
   parseSkillSource,
+  recommendSkills,
+  recordOrigin,
   scanAll,
+  syncRepoCache,
   targetDirFor,
   uninstallSkill,
   type ScanRoot,
@@ -19,6 +27,8 @@ import {
 } from "@skillhub/core";
 
 const VERSION = "0.1.0";
+const ORIGINS_FILE = path.join(os.homedir(), ".skillhub", "origins.json");
+const GITHUB_CACHE_ROOT = path.join(os.homedir(), ".skillhub", "github-cache");
 
 interface GlobalOpts {
   json?: boolean;
@@ -299,6 +309,219 @@ export async function main(argv: string[]): Promise<void> {
       return;
     }
     console.log(`已导出：${result.outDir}（${result.files} 个文件）\n  manifest: ${result.manifestPath}`);
+  });
+
+  const githubInstall = program.command("github-install <owner/repo>").description("从 GitHub 仓库发现并安装 skill");
+  githubInstall
+    .option("--to <kind>", "目标：agents / claude / codex", "agents")
+    .option("--skill <names>", "只装这些 skill（逗号分隔）")
+    .option("--all", "发现多个 skill 时全装（默认 >1 个时只列出）")
+    .option("--list", "只列出仓库里发现的 skill，不安装")
+    .option("--force", "目标内容不同时覆盖")
+    .option("--dry-run", "只看将执行的操作")
+    .option("--json", "JSON 输出");
+  githubInstall.action((ownerRepo: string, opts: { to: string; skill?: string; all?: boolean; list?: boolean; force?: boolean; dryRun?: boolean; json?: boolean }) => {
+    if (!isTargetKind(opts.to)) {
+      console.error("--to 只支持 agents / claude / codex");
+      process.exitCode = 1;
+      return;
+    }
+    const synced = syncRepoCache(ownerRepo, GITHUB_CACHE_ROOT);
+    const records = discoverSkills(synced.dir);
+    if (!opts.json) console.log(`缓存：${synced.dir}${synced.refreshed ? "（有更新）" : ""}`);
+    if (records.length === 0) {
+      console.error("仓库里没有发现 SKILL.md");
+      process.exitCode = 1;
+      return;
+    }
+    const byName = new Map<string, SkillRecord>();
+    for (const r of records) {
+      if (!byName.has(r.name)) byName.set(r.name, r);
+    }
+    if (opts.list || (!opts.skill && !opts.all && byName.size > 1)) {
+      if (opts.json) {
+        printJson({ repo: ownerRepo, skills: [...byName.values()].map((r) => ({ name: r.name, description: r.description, path: r.relativeId })) });
+        return;
+      }
+      console.log(`发现 ${byName.size} 个 skill：`);
+      for (const r of byName.values()) {
+        console.log(`  ${r.name}  (${r.relativeId})`);
+        console.log(`    ${r.description.slice(0, 90) || "（无描述）"}`);
+      }
+      if (!opts.skill && !opts.all && byName.size > 1) {
+        console.log("多 skill 仓库：用 --skill <name> 指定，或 --all 全装");
+      }
+      return;
+    }
+    const names = opts.skill ? opts.skill.split(",").map((s) => s.trim()).filter(Boolean) : [...byName.keys()];
+    const targetRoot = targetDirFor(opts.to as TargetKind);
+    const results: Array<Record<string, unknown>> = [];
+    for (const name of names) {
+      try {
+        const record = byName.get(name);
+        if (!record) throw new Error(`仓库里没有名为 ${name} 的 skill`);
+        const result = installSkill(records, name, { to: { dir: targetRoot }, force: opts.force, dryRun: opts.dryRun });
+        if (result.status === "installed" && !opts.dryRun) {
+          recordOrigin(ORIGINS_FILE, name, {
+            repo: ownerRepo,
+            skillPath: record.relativeId,
+            dirName: record.dirName,
+            targetDir: targetRoot,
+            dirHash: hashDir(result.targetPath),
+          });
+        }
+        results.push({ name, ...result });
+        if (!opts.json) {
+          const verb = result.dryRun ? "[dry-run] " : "";
+          if (result.status === "installed") console.log(`${verb}已安装：${name}（${result.filesCopied} 个文件）→ ${result.targetPath}`);
+          else if (result.status === "identical") console.log(`已是最新：${name}`);
+          else console.log(`冲突：${name} 目标已有不同内容（加 --force 覆盖）`);
+        }
+      } catch (err) {
+        if (opts.json) {
+          results.push({ name, error: err instanceof Error ? err.message : String(err) });
+        } else {
+          console.error(`✗ ${name}：${err instanceof Error ? err.message : String(err)}`);
+          process.exitCode = 1;
+        }
+      }
+    }
+    if (opts.json) printJson({ repo: ownerRepo, results });
+  });
+
+  const originsCmd = program.command("origins").description("skill 的 GitHub 上游注册表");
+  originsCmd.option("--json", "JSON 输出");
+  originsCmd.action((opts: { json?: boolean }) => {
+    const origins = loadOrigins(ORIGINS_FILE);
+    if (opts.json) {
+      printJson(origins);
+      return;
+    }
+    const entries = Object.entries(origins);
+    if (entries.length === 0) {
+      console.log("注册表为空：github-install 会自动登记；手动导入的 skill 用 origins add 登记");
+      return;
+    }
+    for (const [name, e] of entries) {
+      console.log(`${name}  ← ${e.repo} (${e.skillPath})  安装于 ${e.installedAt.slice(0, 10)}`);
+    }
+  });
+  originsCmd
+    .command("add <name> <owner/repo>")
+    .description("为手动导入的 skill 登记上游（从当前安装位置取指纹）")
+    .option("--path <rel>", "skill 在仓库内的相对目录（默认取目录名）")
+    .option("--home <dir>", "覆盖用户主目录")
+    .action((name: string, ownerRepo: string, opts: { path?: string; home?: string }) => {
+      const records = scanAll(defaultRoots(opts.home)).skills;
+      const record = records.filter((r) => r.name === name).sort((a, b) => a.source.localeCompare(b.source))[0];
+      if (!record) {
+        console.error(`本地库找不到 skill：${name}`);
+        process.exitCode = 1;
+        return;
+      }
+      if (record.sourceKind === "plugin-cache") {
+        console.error("插件缓存里的 skill 由插件系统管理，不能登记为手动来源");
+        process.exitCode = 1;
+        return;
+      }
+      const targetRoot = record.skillDir.slice(0, record.skillDir.length - record.relativeId.length - 1);
+      recordOrigin(ORIGINS_FILE, name, {
+        repo: ownerRepo,
+        skillPath: opts.path ?? record.relativeId,
+        dirName: record.dirName,
+        targetDir: targetRoot,
+        dirHash: hashDir(record.skillDir),
+      });
+      console.log(`已登记：${name} ← ${ownerRepo} (${opts.path ?? record.relativeId})`);
+    });
+
+  const outdatedRemote = program.command("outdated-remote").description("对照 GitHub 上游检查已登记 skill 的更新");
+  outdatedRemote.option("--apply", "把有更新的直接覆盖安装").option("--json", "JSON 输出");
+  outdatedRemote.action((opts: { apply?: boolean; json?: boolean }) => {
+    const origins = loadOrigins(ORIGINS_FILE);
+    const entries = Object.entries(origins);
+    if (entries.length === 0) {
+      console.error("注册表为空：先用 github-install 或 origins add 登记");
+      process.exitCode = 1;
+      return;
+    }
+    const rows: Array<{ name: string; repo: string; status: string; detail: string }> = [];
+    for (const [name, entry] of entries) {
+      try {
+        const synced = syncRepoCache(entry.repo, GITHUB_CACHE_ROOT);
+        const upstream = discoverSkills(synced.dir).find(
+          (r) =>
+            r.relativeId.toLowerCase() === entry.skillPath.toLowerCase() ||
+            r.name.toLowerCase() === name.toLowerCase(),
+        );
+        if (!upstream) {
+          rows.push({ name, repo: entry.repo, status: "unknown", detail: "上游找不到该 skill" });
+          continue;
+        }
+        const installedDir = path.join(entry.targetDir, entry.dirName || path.basename(entry.skillPath));
+        if (!fs.existsSync(path.join(installedDir, "SKILL.md"))) {
+          rows.push({ name, repo: entry.repo, status: "removed", detail: "本地已删除" });
+          continue;
+        }
+        const upstreamHash = hashDir(upstream.skillDir);
+        const installedHash = hashDir(installedDir);
+        if (installedHash === upstreamHash) {
+          rows.push({ name, repo: entry.repo, status: "up-to-date", detail: `与上游一致（${synced.refreshed ? "缓存有更新" : "缓存无变化"}）` });
+          continue;
+        }
+        const row: { name: string; repo: string; status: string; detail: string } = {
+          name,
+          repo: entry.repo,
+          status: "update-available",
+          detail: `本地 ${installedHash} → 上游 ${upstreamHash}`,
+        };
+        rows.push(row);
+        if (opts.apply) {
+          const applied = installSkill(discoverSkills(synced.dir), upstream.name, { to: { dir: entry.targetDir }, force: true });
+          if (applied.status === "installed") {
+            recordOrigin(ORIGINS_FILE, name, {
+              repo: entry.repo,
+              skillPath: upstream.relativeId,
+              dirName: upstream.dirName,
+              targetDir: entry.targetDir,
+              dirHash: hashDir(applied.targetPath),
+            });
+            row.detail += " → 已更新";
+          }
+        }
+      } catch (err) {
+        rows.push({ name, repo: entry.repo, status: "error", detail: err instanceof Error ? err.message : String(err) });
+      }
+    }
+    if (opts.json) {
+      printJson(rows);
+      return;
+    }
+    for (const r of rows) {
+      console.log(`[${r.status}] ${r.name} ← ${r.repo}`);
+      if (r.status !== "up-to-date") console.log(`        ${r.detail}`);
+    }
+    const available = rows.filter((r) => r.status === "update-available").length;
+    console.log(`共 ${rows.length} 个：最新 ${rows.filter((r) => r.status === "up-to-date").length}，有更新 ${available}${opts.apply ? "（已全部应用）" : "（--apply 应用）"}`);
+  });
+
+  const recommend = program.command("recommend <task...>").description("按任务描述推荐最合适的 skill（供人或 agent 查库）");
+  recommend.option("--limit <n>", "返回条数", "5").option("--home <dir>", "覆盖用户主目录").option("--json", "JSON 输出");
+  recommend.action((task: string[], opts: { limit: string; home?: string; json?: boolean }) => {
+    const records = scanAll(defaultRoots(opts.home)).skills;
+    const recs = recommendSkills(records, task.join(" "), Number(opts.limit) || 5);
+    if (opts.json) {
+      printJson(recs);
+      return;
+    }
+    if (recs.length === 0) {
+      console.log("没有找到匹配的 skill");
+      return;
+    }
+    for (const [i, r] of recs.entries()) {
+      console.log(`${i + 1}. ${r.name}  匹配分 ${r.score}`);
+      for (const reason of r.reasons) console.log(`   - ${reason}`);
+    }
   });
 
   await program.parseAsync(argv, { from: "user" });

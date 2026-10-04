@@ -129,8 +129,9 @@ describe("uninstallSkill", () => {
 describe("outdatedReport", () => {
   it("内容漂移组按 mtime 找最新并列出落后副本", () => {
     const home = fixtureHome();
-    // 把 codex 副本 mtime 调新，模拟"codex 上改过、claude 没同步"
-    fs.utimesSync(path.join(home, ".codex", "skills", "oldie", "SKILL.md"), new Date(), new Date("2026-10-03T12:00:00Z"));
+    // 把 claude 副本 mtime 调旧，模拟"codex 上改过、claude 没同步"（相对时间，避免日期炸弹）
+    const stale = new Date(Date.now() - 86_400_000);
+    fs.utimesSync(path.join(home, ".claude", "skills", "oldie", "SKILL.md"), stale, stale);
     const records = scanAll(defaultRoots(home)).skills;
     const entries = outdatedReport(records);
     const oldie = entries.find((e) => e.name === "oldie");

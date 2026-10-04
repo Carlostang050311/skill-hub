@@ -6,3 +6,5 @@ export * from "./graph.js";
 export * from "./scanner.js";
 export * from "./groups.js";
 export * from "./distribute.js";
+export * from "./github.js";
+export * from "./recommend.js";
