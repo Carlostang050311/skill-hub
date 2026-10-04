@@ -37,6 +37,27 @@ npm run start -w @skillhub/web # Web UI → http://localhost:3457
 
 See the [Chinese README](README.md) for the full command reference (evaluation, GitHub install, distribution).
 
+## MCP server
+
+```bash
+npm run skillhub -- recommend "turn this article into Xiaohongshu cards"   # CLI lookup
+```
+
+Expose the library to coding agents over the standard MCP protocol:
+
+```json
+{
+  "mcpServers": {
+    "skill-hub": {
+      "command": "node",
+      "args": ["/path/to/skill-hub/packages/mcp/dist/server.js"]
+    }
+  }
+}
+```
+
+Three tools: `recommend_skills` (task → ranked recommendations), `get_skill` (details + body), `library_stats` (inventory stats). The `skills/skill-finder` meta-skill defines the agent's decision rules.
+
 ## Real-world numbers
 
 On a local library of 300+ real skills:

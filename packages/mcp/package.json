@@ -1,0 +1,25 @@
+{
+  "name": "@skillhub/mcp",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "skill-hub 的 MCP server：让编码代理通过标准 MCP 协议查询本机 skill 库（推荐/详情/统计）",
+  "bin": {
+    "skillhub-mcp": "dist/server.js"
+  },
+  "main": "dist/server.js",
+  "types": "dist/server.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "@skillhub/core": "*",
+    "zod": "^3.24.0"
+  }
+}

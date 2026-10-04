@@ -39,6 +39,27 @@ npm run start -w @skillhub/web # Web UI → http://localhost:3457
 
 ![评测报告](docs/screenshots/11-eval-run3.png)
 
+## 让 agent 自己查库（MCP server）
+
+```bash
+npm run skillhub -- recommend "把这篇文章做成小红书图文卡片"   # CLI 直接查
+```
+
+也可以把 skill-hub 作为 MCP server 接进 Claude Code / ZCode 等客户端，agent 干活时自动查库：
+
+```json
+{
+  "mcpServers": {
+    "skill-hub": {
+      "command": "node",
+      "args": ["/path/to/skill-hub/packages/mcp/dist/server.js"]
+    }
+  }
+}
+```
+
+暴露三个工具：`recommend_skills`（任务→推荐）、`get_skill`（详情+正文）、`library_stats`（库统计）。配套 meta-skill `skills/skill-finder` 定义了 agent 的查库决策规则。
+
 ## 真实运行数据
 
 在本机 300+ 个真实 skill 的库上：

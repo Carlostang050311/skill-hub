@@ -9,7 +9,7 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "npm run build -w @skillhub/core && npm run build -w @skillhub/cli && npm run build -w @skillhub/eval && npm run build -w @skillhub/web",
+    "build": "npm run build -w @skillhub/core && npm run build -w @skillhub/cli && npm run build -w @skillhub/eval && npm run build -w @skillhub/mcp && npm run build -w @skillhub/web",
     "test": "vitest run",
     "test:watch": "vitest",
     "skillhub": "node packages/cli/dist/cli.js",
