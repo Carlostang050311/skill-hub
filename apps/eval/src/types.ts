@@ -3,6 +3,8 @@ export interface Scenario {
   shouldTrigger: string[];
   shouldNotTrigger: string[];
   notes?: string;
+  /** 原始 YAML 映射（execute 块等扩展字段从这里读） */
+  raw?: Record<string, unknown>;
 }
 
 export type JobType = "trigger" | "clarity";

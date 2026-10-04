@@ -1,0 +1,16 @@
+skill: tdd
+should_trigger:
+  - 用测试优先的方式实现一个函数
+should_not_trigger:
+  - 直接帮我把功能写了不用测试
+execute:
+  task: |
+    在沙箱里用测试优先的方式实现一个 JavaScript 函数 parseDuration(text)：把 "1h30m"、"45m"、"2h" 这类字符串解析成总分钟数（返回数字）。先写会失败的测试文件 parse-duration.test.js，再写实现 parse-duration.js，最后运行测试并确保全部通过（node 环境可用，测试可用 node:assert 自己写，不必引测试框架）。
+  artifacts:
+    - parse-duration.js
+    - parse-duration.test.js
+  rubric:
+    - 存在测试文件且包含多个断言（至少覆盖 1h30m=90、45m=45、2h=120）
+    - 存在实现文件 parse-duration.js
+    - 最终测试全部通过（报告里给出运行输出）
+    - 报告说明了"测试先写、实现后写"的顺序

@@ -25,6 +25,7 @@ export function parseScenarioYaml(text: string, file: string): Scenario {
     shouldTrigger,
     shouldNotTrigger,
     notes: typeof map.notes === "string" ? map.notes : undefined,
+    raw: map,
   };
 }
 

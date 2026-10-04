@@ -1,0 +1,15 @@
+skill: decision-mapping
+should_trigger:
+  - 帮我把这个想法拆成调研任务
+should_not_trigger:
+  - 按我列好的步骤直接执行
+execute:
+  task: |
+    我有个模糊的想法：想给大学生做一个 AI 工具导航站，但不知道从哪下手。请按 skill 的方法把这个想法变成一张有顺序的调研任务地图，写入沙箱中的 roadmap.md。
+  artifacts:
+    - roadmap.md
+  rubric:
+    - roadmap.md 存在且非空
+    - 想法被拆成多个独立可执行的调研项
+    - 有明确的先后顺序或优先级
+    - 每个任务有具体的产出或验证标准
