@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { Badge, Bar, Card, Mono, SectionTitle, Stat, gradeTone } from "@/components/ui";
+import { TrendChart } from "@/components/TrendChart";
 import { getScan } from "@/lib/data";
-import { getEvalData } from "@/lib/evaldb";
+import { getAllRunReports, getEvalData } from "@/lib/evaldb";
 import { gradeOf, healthScore, warningCategories } from "@/lib/health";
+import { buildTrend, skillDeltas } from "@/lib/trend";
 
 export const dynamic = "force-dynamic";
 
@@ -105,20 +107,71 @@ export default function EvalPage() {
 
           {evalData && evalData.runs.length > 1 ? (
             <Card>
-              <SectionTitle>历史 run</SectionTitle>
-              <div className="space-y-1 text-xs text-slate-400">
-                {evalData.runs.map((r) => (
-                  <div key={r.id} className="flex items-baseline justify-between font-mono">
-                    <span>
-                      #{r.id} {new Date(r.startedAt).toLocaleString("zh-CN")} {r.backend}
-                      {r.model ? `/${r.model}` : ""}
-                    </span>
-                    <span className="tabular-nums">
-                      {r.totalSkills} skills · overall {r.avgOverall == null ? "—" : Math.round(r.avgOverall)}
-                    </span>
+              <SectionTitle hint="每次 run 的平均分（0-100）">历史趋势</SectionTitle>
+              <TrendChart points={buildTrend(evalData.runs)} />
+              <table className="mt-4 w-full text-xs">
+                <thead>
+                  <tr className="border-b border-slate-800 text-left text-slate-500">
+                    <th className="py-1.5 font-medium">run</th>
+                    <th className="py-1.5 font-medium">时间</th>
+                    <th className="py-1.5 text-right font-medium">skill 数</th>
+                    <th className="py-1.5 text-right font-medium">overall</th>
+                    <th className="py-1.5 text-right font-medium">触发</th>
+                    <th className="py-1.5 text-right font-medium">清晰度</th>
+                    <th className="py-1.5 text-right font-medium">静态</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {evalData.runs.map((r) => (
+                    <tr key={r.id} className="border-b border-slate-800/50 last:border-0">
+                      <td className="py-1.5 font-mono text-slate-300">#{r.id}</td>
+                      <td className="py-1.5 text-slate-500">{new Date(r.startedAt).toLocaleString("zh-CN")}</td>
+                      <td className="py-1.5 text-right tabular-nums text-slate-400">{r.totalSkills}</td>
+                      <td className="py-1.5 text-right tabular-nums text-violet-300">
+                        {r.avgOverall == null ? "—" : Math.round(r.avgOverall)}
+                      </td>
+                      <td className="py-1.5 text-right tabular-nums text-slate-400">
+                        {r.avgTrigger == null ? "—" : `${Math.round(r.avgTrigger)}%`}
+                      </td>
+                      <td className="py-1.5 text-right tabular-nums text-slate-400">
+                        {r.avgClarity == null ? "—" : Math.round(r.avgClarity)}
+                      </td>
+                      <td className="py-1.5 text-right tabular-nums text-slate-400">{Math.round(r.avgStatic)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {(() => {
+                const deltas = skillDeltas(
+                  getAllRunReports().flatMap((run) =>
+                    run.report.results
+                      .filter((r) => r.overall != null)
+                      .map((r) => ({ runId: run.summary.id, skill: r.skill, overall: r.overall as number })),
+                  ),
+                ).slice(0, 8);
+                if (deltas.length === 0) return null;
+                return (
+                  <div className="mt-4 border-t border-slate-800 pt-3">
+                    <div className="mb-2 text-xs font-medium text-slate-300">同名 skill 跨 run 变化（修复前后对比）</div>
+                    <div className="space-y-1">
+                      {deltas.map((d) => (
+                        <div key={d.name} className="flex items-baseline justify-between gap-3 text-xs">
+                          <Link href={`/skills/${d.name}`} className="truncate text-slate-300 hover:text-violet-300">
+                            {d.name}
+                          </Link>
+                          <span className="tabular-nums text-slate-500">
+                            #{d.first.runId} {d.first.overall} → #{d.latest.runId} {d.latest.overall}
+                          </span>
+                          <span className={`w-10 text-right tabular-nums ${d.delta > 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                            {d.delta > 0 ? "+" : ""}
+                            {d.delta}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                ))}
-              </div>
+                );
+              })()}
             </Card>
           ) : null}
         </>

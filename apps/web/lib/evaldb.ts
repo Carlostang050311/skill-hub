@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { cache } from "react";
-import { latestRun, listRuns, openDb, type RunReport, type RunSummaryRow } from "@skillhub/eval";
+import { getRunReport, latestRun, listRuns, openDb, type RunReport, type RunSummaryRow } from "@skillhub/eval";
 
 export interface EvalData {
   runs: RunSummaryRow[];
@@ -15,4 +15,22 @@ export const getEvalData = cache((): EvalData | null => {
   if (!fs.existsSync(dbPath)) return null;
   const db = openDb(dbPath);
   return { runs: listRuns(db), latest: latestRun(db) };
+});
+
+export interface FullRun {
+  summary: RunSummaryRow;
+  report: RunReport;
+}
+
+/** 最近 10 个 run 的完整报告（供跨 run 对比） */
+export const getAllRunReports = cache((): FullRun[] => {
+  const dbPath = path.join(os.homedir(), ".skillhub", "eval.db");
+  if (!fs.existsSync(dbPath)) return [];
+  const db = openDb(dbPath);
+  const out: FullRun[] = [];
+  for (const summary of listRuns(db).slice(0, 10)) {
+    const found = getRunReport(db, summary.id);
+    if (found) out.push({ summary, report: found.report });
+  }
+  return out;
 });
