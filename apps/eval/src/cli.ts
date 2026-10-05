@@ -7,10 +7,11 @@ import { pathToFileURL } from "node:url";
 import { defaultRoots, scanAll } from "@skillhub/core";
 import { insertRun, getRunReport, latestRun, listRuns, openDb } from "./db.js";
 import { ensureSandbox, listSandboxFiles, parseExecReport, parseExecSpec, renderExecutorPrompt, renderJudgePrompt, scoreExec, type ExecSpec } from "./exec.js";
+import { buildGenChunks, parseGenResults, renderGenPrompt, scenarioToYaml, toGenItems, uncoveredSkills, writeScenarioFile } from "./gen.js";
 import { buildJobs, parseResultsFile } from "./jobs.js";
 import { loadScenarios } from "./scenario.js";
 import { scoreRun } from "./score.js";
-import type { EvalJob, JobResult } from "./types.js";
+import type { EvalJob, JobResult, Scenario } from "./types.js";
 
 const VERSION = "0.1.0";
 
@@ -43,12 +44,12 @@ export async function main(argv: string[]): Promise<void> {
   const plan = program.command("plan").description("构建评测作业文件（供 ZCode 子代理或 API 后端执行）");
   addGlobal(plan);
   plan
-    .option("--scenarios <dir>", "scenario YAML 目录", "scenarios")
+    .option("--scenarios <dirs>", "scenario YAML 目录（逗号分隔）", "scenarios,scenarios-auto")
     .option("--out <file>", "作业 JSONL 输出路径", ".skillhub/eval-jobs.jsonl")
     .option("--names <list>", "只评这些 skill（逗号分隔）");
   plan.action((opts: { scenarios: string; out: string; names?: string; home?: string; json?: boolean }) => {
     const wanted = opts.names ? new Set(opts.names.split(",").map((s) => s.trim()).filter(Boolean)) : null;
-    const scenarios = loadScenarios(opts.scenarios).filter((s) => !wanted || wanted.has(s.skill));
+    const scenarios = opts.scenarios.split(",").flatMap((d) => loadScenarios(d.trim())).filter((s) => !wanted || wanted.has(s.skill));
     const { jobs, skipped } = buildJobs(scenarios, scanRecords(opts.home));
     fs.mkdirSync(path.dirname(opts.out), { recursive: true });
     fs.writeFileSync(opts.out, jobs.map((j) => JSON.stringify(j)).join("\n") + "\n", "utf8");
@@ -99,7 +100,7 @@ export async function main(argv: string[]): Promise<void> {
   const ingest = program.command("ingest").description("回收作业结果并评分入库（ZCode 子代理后端）");
   addGlobal(ingest);
   ingest
-    .option("--scenarios <dir>", "scenario YAML 目录", "scenarios")
+    .option("--scenarios <dirs>", "scenario YAML 目录（逗号分隔）", "scenarios,scenarios-auto")
     .option("--names <list>", "只评这些 skill（逗号分隔，与 plan 的过滤一致）")
     .option("--jobs <file>", "作业 JSONL", ".skillhub/eval-jobs.jsonl")
     .option("--results <file>", "结果 JSONL（每行 {id, raw}）", ".skillhub/eval-results.jsonl")
@@ -107,7 +108,7 @@ export async function main(argv: string[]): Promise<void> {
   ingest.action(
     (opts: { scenarios: string; names?: string; jobs: string; results: string; model: string; db: string; home?: string; json?: boolean }) => {
       const wanted = opts.names ? new Set(opts.names.split(",").map((s) => s.trim()).filter(Boolean)) : null;
-      const scenarios = loadScenarios(opts.scenarios).filter((s) => !wanted || wanted.has(s.skill));
+      const scenarios = opts.scenarios.split(",").flatMap((d) => loadScenarios(d.trim())).filter((s) => !wanted || wanted.has(s.skill));
       const jobs = fs
         .readFileSync(opts.jobs, "utf8")
         .split("\n")
@@ -273,6 +274,83 @@ export async function main(argv: string[]): Promise<void> {
       })),
     );
     console.log(`run 已追加 → ${historyFile}`);
+  });
+
+  const gen = program.command("gen").description("半自动生成 trigger scenario：分块派给子代理产出，回收校验后写入 scenarios-auto（人工过目）");
+
+  const genPlan = gen.command("plan").description("构建生成作业");
+  genPlan
+    .option("--scenarios <dir>", "已有 scenario 目录（算已覆盖）", "scenarios")
+    .option("--auto-dir <dir>", "自动生成 scenario 目录（也算已覆盖）", "scenarios-auto")
+    .option("--chunk-size <n>", "每个作业覆盖的 skill 数", "12")
+    .option("--out <file>", "作业 JSONL 输出", ".skillhub/gen-jobs.jsonl")
+    .option("--home <dir>", "覆盖用户主目录")
+    .option("--json", "JSON 输出");
+  genPlan.action((opts: { scenarios: string; autoDir: string; chunkSize: string; out: string; home?: string; json?: boolean }) => {
+    const covered = new Set([...loadScenarios(opts.scenarios), ...loadScenarios(opts.autoDir)].map((s) => s.skill));
+    const uncovered = uncoveredSkills(scanRecords(opts.home), covered);
+    const chunks = buildGenChunks(toGenItems(uncovered), Number(opts.chunkSize) || 12);
+    const jobs = chunks.map((chunk) => ({
+      id: chunk.id,
+      type: "gen",
+      messages: [{ role: "user", content: renderGenPrompt(chunk) }],
+    }));
+    fs.mkdirSync(path.dirname(opts.out), { recursive: true });
+    fs.writeFileSync(opts.out, jobs.map((j) => JSON.stringify(j)).join("\n") + "\n", "utf8");
+    if (opts.json) {
+      printJson({ uncovered: uncovered.length, chunks: chunks.length, out: opts.out });
+      return;
+    }
+    console.log(`未覆盖 ${uncovered.length} 个 skill → ${chunks.length} 个生成作业 → ${opts.out}`);
+  });
+
+  const genIngest = gen.command("ingest").description("回收生成结果，校验后写入 scenarios-auto");
+  genIngest
+    .option("--results <files>", "结果 JSONL（逗号分隔多个）", ".skillhub/gen-results.jsonl")
+    .option("--scenarios <dir>", "已有 scenario 目录（算已覆盖，跳过）", "scenarios")
+    .option("--auto-dir <dir>", "输出目录", "scenarios-auto")
+    .option("--home <dir>", "覆盖用户主目录")
+    .option("--json", "JSON 输出");
+  genIngest.action((opts: { results: string; scenarios: string; autoDir: string; home?: string; json?: boolean }) => {
+    const records = scanRecords(opts.home);
+    const validNames = new Set(records.map((r) => r.name));
+    const covered = new Set([...loadScenarios(opts.scenarios), ...loadScenarios(opts.autoDir)].map((s) => s.skill));
+    const generated: Scenario[] = [];
+    const invalid: Array<{ skill: string; reason: string }> = [];
+    const skipped: string[] = [];
+    for (const file of opts.results.split(",").map((f) => f.trim()).filter(Boolean)) {
+      for (const line of fs.readFileSync(file, "utf8").split("\n")) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        try {
+          const obj = JSON.parse(trimmed) as { raw?: string };
+          if (typeof obj.raw !== "string") continue;
+          const outcome = parseGenResults(obj.raw, validNames);
+          for (const scenario of outcome.generated) {
+            if (covered.has(scenario.skill)) {
+              skipped.push(scenario.skill);
+              continue;
+            }
+            covered.add(scenario.skill);
+            generated.push(scenario);
+          }
+          invalid.push(...outcome.invalid);
+        } catch {
+          invalid.push({ skill: "(行)", reason: `文件 ${file} 中有无法解析的行` });
+        }
+      }
+    }
+    const files = generated.map((s) => writeScenarioFile(opts.autoDir, s));
+    if (opts.json) {
+      printJson({ generated: generated.length, skipped: skipped.length, invalid, dir: opts.autoDir });
+      return;
+    }
+    console.log(`生成 ${generated.length} 个 scenario → ${opts.autoDir}`);
+    if (skipped.length > 0) console.log(`跳过（已有 scenario）：${skipped.join(", ")}`);
+    if (invalid.length > 0) {
+      console.log(`无效 ${invalid.length} 条：`);
+      for (const item of invalid.slice(0, 10)) console.log(`  ✗ ${item.skill}：${item.reason}`);
+    }
   });
 
   await program.parseAsync(argv, { from: "user" });
