@@ -37,6 +37,16 @@ npm run start -w @skillhub/web # Web UI → http://localhost:3457
 
 See the [Chinese README](README.md) for the full command reference (evaluation, GitHub install, distribution).
 
+## Install from skills.sh
+
+`skill-finder` is listed on the skills.sh directory; install it with the skills CLI:
+
+```bash
+npx skills add Carlostang050311/skill-hub
+```
+
+Repo page: [skills.sh/Carlostang050311/skill-hub](https://www.skills.sh/Carlostang050311/skill-hub)
+
 ## MCP server
 
 ```bash

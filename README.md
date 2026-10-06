@@ -39,6 +39,16 @@ npm run start -w @skillhub/web # Web UI → http://localhost:3457
 
 ![评测报告](docs/screenshots/11-eval-run3.png)
 
+## 从 skills.sh 安装
+
+`skill-finder` 已收录到 skills.sh 目录，用 skills CLI 一条命令安装：
+
+```bash
+npx skills add Carlostang050311/skill-hub
+```
+
+仓库页：[skills.sh/Carlostang050311/skill-hub](https://www.skills.sh/Carlostang050311/skill-hub)
+
 ## 让 agent 自己查库（MCP server）
 
 ```bash
