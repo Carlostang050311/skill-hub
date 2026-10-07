@@ -1,0 +1,15 @@
+skill: brainstorming
+should_trigger:
+  - 帮我头脑风暴一下这个点子
+should_not_trigger:
+  - 直接告诉我你推荐哪个方案
+execute:
+  task: |
+    主题：给独立开发者提升作品集曝光的渠道。请按 skill 的方法做一轮头脑风暴，产出写入沙箱中的 ideas.md。
+  artifacts:
+    - ideas.md
+  rubric:
+    - ideas.md 存在且非空
+    - 产出至少 8 条想法且彼此方向不同（不是同一思路换措辞）
+    - 至少包含 1 条反直觉或小众的想法
+    - 每条有一句话说明为什么值得考虑

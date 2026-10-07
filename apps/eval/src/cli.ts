@@ -9,6 +9,7 @@ import { insertRun, getRunReport, latestRun, listRuns, openDb } from "./db.js";
 import { ensureSandbox, listSandboxFiles, parseExecReport, parseExecSpec, renderExecutorPrompt, renderJudgePrompt, scoreExec, type ExecSpec } from "./exec.js";
 import { buildGenChunks, parseGenResults, renderGenPrompt, scenarioToYaml, toGenItems, uncoveredSkills, writeScenarioFile } from "./gen.js";
 import { buildJobs, parseResultsFile } from "./jobs.js";
+import { collectLeaderboard, type ExecRunRow } from "./leaderboard.js";
 import { loadScenarios } from "./scenario.js";
 import { scoreRun } from "./score.js";
 import type { EvalJob, JobResult, Scenario } from "./types.js";
@@ -351,6 +352,27 @@ export async function main(argv: string[]): Promise<void> {
       console.log(`无效 ${invalid.length} 条：`);
       for (const item of invalid.slice(0, 10)) console.log(`  ✗ ${item.skill}：${item.reason}`);
     }
+  });
+
+  const exportCmd = program.command("export").description("导出公开质量榜数据 JSON（skill 最新分数 + 执行级成绩）");
+  exportCmd
+    .option("--out <file>", "输出 JSON 路径", "docs/leaderboard/data.json")
+    .option("--exec-runs <file>", "执行级 run 汇总文件", ".skillhub/exec-runs.json")
+    .option("--db <file>", "评测库路径", defaultDbPath());
+  exportCmd.action((opts: { out: string; execRuns: string; db: string }) => {
+    const db = openDb(opts.db);
+    let execRuns: ExecRunRow[] = [];
+    if (fs.existsSync(opts.execRuns)) {
+      try {
+        execRuns = JSON.parse(fs.readFileSync(opts.execRuns, "utf8")) as ExecRunRow[];
+      } catch {
+        execRuns = [];
+      }
+    }
+    const data = collectLeaderboard(db, execRuns, new Date().toISOString());
+    fs.mkdirSync(path.dirname(opts.out), { recursive: true });
+    fs.writeFileSync(opts.out, JSON.stringify(data, null, 2) + "\n", "utf8");
+    console.log(`质量榜数据已导出：${opts.out}（${data.skills.length} 个 skill，${data.runs.length} 个 run）`);
   });
 
   await program.parseAsync(argv, { from: "user" });

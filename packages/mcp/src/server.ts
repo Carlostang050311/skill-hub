@@ -9,7 +9,9 @@ import { pathToFileURL } from "node:url";
 const VERSION = "0.1.0";
 
 function getRecords() {
-  return scanAll(defaultRoots()).skills;
+  // SKILLHUB_HOME 可指向自定义主目录（CI 用夹具库、多库用户可切换），默认本机
+  const home = process.env.SKILLHUB_HOME || undefined;
+  return scanAll(defaultRoots(home)).skills;
 }
 
 export function createServer(): McpServer {

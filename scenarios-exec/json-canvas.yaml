@@ -1,0 +1,15 @@
+skill: json-canvas
+should_trigger:
+  - 帮我画一张 Obsidian Canvas 白板
+should_not_trigger:
+  - 帮我画一张 mermaid 流程图
+execute:
+  task: |
+    主题：一个内容创作流程（选题 → 写作 → 审校 → 发布 → 复盘，其中审校不通过要退回写作）。请按 skill 的方法生成一张 Obsidian Canvas，保存为沙箱中的 flow.canvas。
+  artifacts:
+    - flow.canvas
+  rubric:
+    - flow.canvas 存在且是合法 JSON
+    - 含 nodes 和 edges 顶层字段（Canvas 格式）
+    - 节点覆盖五个阶段且边的方向正确（审校→发布、审校→退回写作都存在）
+    - 每个节点有文本标注

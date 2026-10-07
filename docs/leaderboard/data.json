@@ -1,0 +1,1721 @@
+{
+  "generatedAt": "2026-10-07T04:12:38.438Z",
+  "repo": "Carlostang050311/skill-hub",
+  "runs": [
+    {
+      "id": 1,
+      "startedAt": "2026-10-03T08:45:12.708Z",
+      "totalSkills": 10,
+      "avgOverall": 93.5
+    },
+    {
+      "id": 2,
+      "startedAt": "2026-10-03T11:02:48.698Z",
+      "totalSkills": 24,
+      "avgOverall": 90.83333333333333
+    },
+    {
+      "id": 3,
+      "startedAt": "2026-10-03T11:03:45.757Z",
+      "totalSkills": 14,
+      "avgOverall": 90.71428571428571
+    },
+    {
+      "id": 4,
+      "startedAt": "2026-10-03T11:12:39.325Z",
+      "totalSkills": 1,
+      "avgOverall": 86
+    },
+    {
+      "id": 5,
+      "startedAt": "2026-10-05T06:33:12.924Z",
+      "totalSkills": 40,
+      "avgOverall": 93.225
+    },
+    {
+      "id": 6,
+      "startedAt": "2026-10-05T06:33:21.237Z",
+      "totalSkills": 40,
+      "avgOverall": 92.9
+    },
+    {
+      "id": 9,
+      "startedAt": "2026-10-05T11:49:28.165Z",
+      "totalSkills": 119,
+      "avgOverall": 92.57142857142857
+    }
+  ],
+  "skills": [
+    {
+      "name": "decision-mapping",
+      "overall": 100,
+      "trigger": null,
+      "clarity": null,
+      "staticScore": 100,
+      "lastRunId": 2,
+      "exec": {
+        "score": 100,
+        "passed": 4,
+        "total": 4,
+        "runAt": "2026-10-04T04:27:44.190Z"
+      }
+    },
+    {
+      "name": "humanizer-zh",
+      "overall": 100,
+      "trigger": 100,
+      "clarity": 100,
+      "staticScore": 100,
+      "lastRunId": 3,
+      "exec": {
+        "score": 100,
+        "passed": 4,
+        "total": 4,
+        "runAt": "2026-10-04T04:27:44.190Z"
+      }
+    },
+    {
+      "name": "tdd",
+      "overall": 100,
+      "trigger": null,
+      "clarity": null,
+      "staticScore": 100,
+      "lastRunId": 2,
+      "exec": {
+        "score": 100,
+        "passed": 4,
+        "total": 4,
+        "runAt": "2026-10-04T04:27:44.190Z"
+      }
+    },
+    {
+      "name": "claude-skill-creator",
+      "overall": 100,
+      "trigger": 100,
+      "clarity": 100,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "clone-website",
+      "overall": 100,
+      "trigger": null,
+      "clarity": null,
+      "staticScore": 100,
+      "lastRunId": 2,
+      "exec": null
+    },
+    {
+      "name": "domain-modeling",
+      "overall": 100,
+      "trigger": 100,
+      "clarity": 100,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "guizang-product-video-skill",
+      "overall": 100,
+      "trigger": 100,
+      "clarity": 100,
+      "staticScore": 100,
+      "lastRunId": 3,
+      "exec": null
+    },
+    {
+      "name": "pdf",
+      "overall": 100,
+      "trigger": null,
+      "clarity": null,
+      "staticScore": 100,
+      "lastRunId": 2,
+      "exec": null
+    },
+    {
+      "name": "plugin-creator",
+      "overall": 100,
+      "trigger": 100,
+      "clarity": 100,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "screenshot",
+      "overall": 100,
+      "trigger": null,
+      "clarity": null,
+      "staticScore": 100,
+      "lastRunId": 2,
+      "exec": null
+    },
+    {
+      "name": "writing-shape",
+      "overall": 100,
+      "trigger": 100,
+      "clarity": 100,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "claude-typer",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "commit",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "computer-use",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "diagnosing-bugs",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "guizang-ppt-skill",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "ios-dev",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "mimosa-security-scan",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "playwright",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "prototype",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "qa",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "render-deploy",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "secret",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "setup-matt-pocock-skills",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "subagent-driven-development",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "test-driven-development",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "triage",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "writing-beats",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "writing-fragments",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "zcode-computer-use",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "diagnosing-mcp",
+      "overall": 97,
+      "trigger": 100,
+      "clarity": 100,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "finishing-a-development-branch",
+      "overall": 97,
+      "trigger": 100,
+      "clarity": 100,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "qiaomu-goal-meta-skill",
+      "overall": 97,
+      "trigger": 100,
+      "clarity": 100,
+      "staticScore": 90,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "sora",
+      "overall": 97,
+      "trigger": 100,
+      "clarity": 100,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "baoyu-design",
+      "overall": 96,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "design-an-interface",
+      "overall": 96,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "dispatching-parallel-agents",
+      "overall": 96,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "executing-plans",
+      "overall": 96,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "git-guardrails-claude-code",
+      "overall": 96,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "implement",
+      "overall": 96,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "improve-codebase-architecture",
+      "overall": 96,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "issue",
+      "overall": 96,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "migrate-to-shoehorn",
+      "overall": 96,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "pptx",
+      "overall": 96,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "pr",
+      "overall": 96,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "receiving-code-review",
+      "overall": 96,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "review",
+      "overall": 96,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "scaffold-exercises",
+      "overall": 96,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "setup",
+      "overall": 96,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "systematic-debugging",
+      "overall": 96,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "to-issues",
+      "overall": 96,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "ai-desk-card",
+      "overall": 95,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 90,
+      "lastRunId": 3,
+      "exec": null
+    },
+    {
+      "name": "android-dev",
+      "overall": 95,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 90,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "ayi-nonviolent-communication",
+      "overall": 95,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "control-browser",
+      "overall": 95,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "diagnosing-commands",
+      "overall": 95,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 90,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "diagnosing-hooks",
+      "overall": 95,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "dynamic-workflows",
+      "overall": 95,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 90,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "figma",
+      "overall": 95,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "guizang-material-illustration",
+      "overall": 95,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 90,
+      "lastRunId": 3,
+      "exec": null
+    },
+    {
+      "name": "guizang-social-card-skill",
+      "overall": 95,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 90,
+      "lastRunId": 3,
+      "exec": null
+    },
+    {
+      "name": "humanizer",
+      "overall": 95,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 90,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "neat-freak",
+      "overall": 95,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "obsidian-bases",
+      "overall": 95,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 90,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "obsidian-cli",
+      "overall": 95,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "renwei-writing",
+      "overall": 95,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "ui-ux-pro-max",
+      "overall": 95,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "using-git-worktrees",
+      "overall": 95,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "video-shotcraft",
+      "overall": 95,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "writing-skills",
+      "overall": 95,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "zcode-configuration-guide",
+      "overall": 95,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "ask-matt",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "brainstorming",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "codespace",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "frontend-design",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "gist",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "grilling",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "resolving-merge-conflicts",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "setup-pre-commit",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "skill-finder",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "to-prd",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "ubiquitous-language",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "vercel-deploy",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "verification-before-completion",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "web-design-guidelines",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "wechat-2d-render",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "workflow-run",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "writing-great-skills",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "writing-plans",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "diagnosing-plugins",
+      "overall": 93,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "diagnosing-skills",
+      "overall": 93,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 90,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "docx",
+      "overall": 93,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "figma-implement-design",
+      "overall": 93,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 90,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "hv-analysis",
+      "overall": 93,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "imagegen-cli",
+      "overall": 93,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "imagegen-frontend-mobile",
+      "overall": 93,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 90,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "json-canvas",
+      "overall": 93,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "khazix-writer",
+      "overall": 93,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 90,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "knap",
+      "overall": 93,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "obsidian-markdown",
+      "overall": 93,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "redesign-existing-projects",
+      "overall": 93,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "repo",
+      "overall": 93,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "storage-analyzer",
+      "overall": 93,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "yingzao",
+      "overall": 93,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 90,
+      "lastRunId": 3,
+      "exec": null
+    },
+    {
+      "name": "codebase-design",
+      "overall": 92,
+      "trigger": 100,
+      "clarity": 73,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "design-taste-frontend",
+      "overall": 92,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 80,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "fit-ride-studio",
+      "overall": 92,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 80,
+      "lastRunId": 3,
+      "exec": null
+    },
+    {
+      "name": "full-output-enforcement",
+      "overall": 92,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 80,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "html-anything-frame-logo-outro",
+      "overall": 92,
+      "trigger": 100,
+      "clarity": 73,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "light-spotlight-render",
+      "overall": 92,
+      "trigger": 100,
+      "clarity": 73,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "obsidian-vault",
+      "overall": 92,
+      "trigger": 100,
+      "clarity": 73,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "procedural-fish-render",
+      "overall": 92,
+      "trigger": 100,
+      "clarity": 73,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "release",
+      "overall": 92,
+      "trigger": 100,
+      "clarity": 73,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "remotion-3d-ticker",
+      "overall": 92,
+      "trigger": 100,
+      "clarity": 73,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "request-refactor-plan",
+      "overall": 92,
+      "trigger": 100,
+      "clarity": 73,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "requesting-code-review",
+      "overall": 92,
+      "trigger": 100,
+      "clarity": 73,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "ruler-progress-render",
+      "overall": 92,
+      "trigger": 100,
+      "clarity": 73,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "skill-creator",
+      "overall": 92,
+      "trigger": 100,
+      "clarity": 73,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "svg-assembly-animator",
+      "overall": 92,
+      "trigger": 100,
+      "clarity": 73,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "using-superpowers",
+      "overall": 92,
+      "trigger": 100,
+      "clarity": 73,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "defuddle",
+      "overall": 91,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "excalidraw-diagram",
+      "overall": 91,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "high-end-visual-design",
+      "overall": 91,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "imagegen-frontend-web",
+      "overall": 91,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "presentation-skill",
+      "overall": 91,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 90,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "restore-legacy-sessions",
+      "overall": 91,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "xlsx",
+      "overall": 91,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 90,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "aihot",
+      "overall": 90,
+      "trigger": null,
+      "clarity": null,
+      "staticScore": 90,
+      "lastRunId": 2,
+      "exec": null
+    },
+    {
+      "name": "claude-to-im",
+      "overall": 90,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 80,
+      "lastRunId": 3,
+      "exec": null
+    },
+    {
+      "name": "develop-web-game",
+      "overall": 90,
+      "trigger": null,
+      "clarity": null,
+      "staticScore": 90,
+      "lastRunId": 2,
+      "exec": null
+    },
+    {
+      "name": "handoff",
+      "overall": 90,
+      "trigger": 100,
+      "clarity": 67,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "html-anything",
+      "overall": 90,
+      "trigger": 100,
+      "clarity": 67,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "impeccable",
+      "overall": 90,
+      "trigger": null,
+      "clarity": null,
+      "staticScore": 90,
+      "lastRunId": 2,
+      "exec": null
+    },
+    {
+      "name": "industrial-brutalist-ui",
+      "overall": 90,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 80,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "stitch-design-taste",
+      "overall": 90,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 80,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "vercel-react-best-practices",
+      "overall": 90,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 80,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "vercel-react-view-transitions",
+      "overall": 90,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 80,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "cloudbase",
+      "overall": 89,
+      "trigger": 100,
+      "clarity": 73,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "mermaid-visualizer",
+      "overall": 89,
+      "trigger": 100,
+      "clarity": 73,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "stitch::extract-design-md",
+      "overall": 89,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 70,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "stitch::extract-static-html",
+      "overall": 89,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 70,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "video-wrapper",
+      "overall": 89,
+      "trigger": 100,
+      "clarity": 73,
+      "staticScore": 90,
+      "lastRunId": 3,
+      "exec": null
+    },
+    {
+      "name": "web-gui-tester",
+      "overall": 89,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 70,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "design-taste-frontend-v1",
+      "overall": 88,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 80,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "gpt-taste",
+      "overall": 88,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 80,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "html-anything-data-report",
+      "overall": 88,
+      "trigger": 100,
+      "clarity": 60,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "html-anything-deck-pitch",
+      "overall": 88,
+      "trigger": 100,
+      "clarity": 60,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "html-anything-deck-product-launch",
+      "overall": 88,
+      "trigger": 100,
+      "clarity": 60,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "html-anything-deck-swiss-international",
+      "overall": 88,
+      "trigger": 100,
+      "clarity": 60,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "html-anything-resume-modern",
+      "overall": 88,
+      "trigger": 100,
+      "clarity": 60,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "image-to-code",
+      "overall": 88,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 80,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "logo-generator",
+      "overall": 88,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 80,
+      "lastRunId": 3,
+      "exec": null
+    },
+    {
+      "name": "seedance-prompt",
+      "overall": 88,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 80,
+      "lastRunId": 3,
+      "exec": null
+    },
+    {
+      "name": "brandkit",
+      "overall": 87,
+      "trigger": 100,
+      "clarity": 67,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "document-illustrator",
+      "overall": 87,
+      "trigger": 100,
+      "clarity": 67,
+      "staticScore": 90,
+      "lastRunId": 3,
+      "exec": null
+    },
+    {
+      "name": "minimalist-ui",
+      "overall": 87,
+      "trigger": 100,
+      "clarity": 67,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "stitch::generate-design",
+      "overall": 87,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 70,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "stitch::upload-to-stitch",
+      "overall": 87,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 70,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "edit-article",
+      "overall": 86,
+      "trigger": 100,
+      "clarity": 53,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "html-anything-article-magazine",
+      "overall": 86,
+      "trigger": 100,
+      "clarity": 53,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "html-anything-card-twitter",
+      "overall": 86,
+      "trigger": 100,
+      "clarity": 53,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "html-anything-card-xiaohongshu",
+      "overall": 86,
+      "trigger": 100,
+      "clarity": 53,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "html-anything-deck-blueprint",
+      "overall": 86,
+      "trigger": 100,
+      "clarity": 53,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "html-anything-deck-guizang-editorial",
+      "overall": 86,
+      "trigger": 100,
+      "clarity": 53,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "html-anything-deck-tech-sharing",
+      "overall": 86,
+      "trigger": 100,
+      "clarity": 53,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "html-anything-doc-kami-parchment",
+      "overall": 86,
+      "trigger": 100,
+      "clarity": 53,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "html-anything-frame-glitch-title",
+      "overall": 86,
+      "trigger": 100,
+      "clarity": 53,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "html-anything-poster-hero",
+      "overall": 86,
+      "trigger": 100,
+      "clarity": 53,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "html-anything-prototype-web",
+      "overall": 86,
+      "trigger": 100,
+      "clarity": 53,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "nanobanana-ppt-skills",
+      "overall": 86,
+      "trigger": 100,
+      "clarity": 73,
+      "staticScore": 80,
+      "lastRunId": 4,
+      "exec": null
+    },
+    {
+      "name": "stitch::manage-design-system",
+      "overall": 86,
+      "trigger": 100,
+      "clarity": 73,
+      "staticScore": 80,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "canvas-design",
+      "overall": 85,
+      "trigger": 100,
+      "clarity": 60,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "grill-me",
+      "overall": 85,
+      "trigger": 100,
+      "clarity": 60,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "grill-with-docs",
+      "overall": 85,
+      "trigger": 100,
+      "clarity": 60,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "html-anything-magazine-poster",
+      "overall": 84,
+      "trigger": 100,
+      "clarity": 47,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "html-anything-saas-landing",
+      "overall": 84,
+      "trigger": 100,
+      "clarity": 47,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": null
+    },
+    {
+      "name": "html-anything-vfx-text-cursor",
+      "overall": 84,
+      "trigger": 100,
+      "clarity": 47,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "html-anything-video-hyperframes",
+      "overall": 84,
+      "trigger": 100,
+      "clarity": 47,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "github-oneclick-packager",
+      "overall": 83,
+      "trigger": 100,
+      "clarity": 53,
+      "staticScore": 90,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "stitch::code-to-design",
+      "overall": 81,
+      "trigger": 100,
+      "clarity": 67,
+      "staticScore": 70,
+      "lastRunId": 9,
+      "exec": null
+    },
+    {
+      "name": "academic-pptx",
+      "overall": 80,
+      "trigger": null,
+      "clarity": null,
+      "staticScore": 80,
+      "lastRunId": 2,
+      "exec": null
+    },
+    {
+      "name": "youtube-clipper",
+      "overall": 80,
+      "trigger": 100,
+      "clarity": 73,
+      "staticScore": 60,
+      "lastRunId": 3,
+      "exec": null
+    },
+    {
+      "name": "NanoBanana-PPT-Skills",
+      "overall": 78,
+      "trigger": 100,
+      "clarity": 67,
+      "staticScore": 60,
+      "lastRunId": 3,
+      "exec": null
+    },
+    {
+      "name": "teach",
+      "overall": 60,
+      "trigger": null,
+      "clarity": null,
+      "staticScore": 60,
+      "lastRunId": 2,
+      "exec": null
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+skill: to-prd
+should_trigger:
+  - 帮我把这个想法写成 PRD
+should_not_trigger:
+  - 帮我实现这个功能
+execute:
+  task: |
+    产品想法：一个给大学生用的二手教材交易小程序，支持扫码上架和校内面交。请按 skill 的方法写一份 PRD，写入沙箱中的 prd.md。
+  artifacts:
+    - prd.md
+  rubric:
+    - prd.md 存在且非空
+    - 有明确的用户/角色和核心场景
+    - 有可验收的功能需求描述（而非营销语言）
+    - 有明确的非目标或范围边界

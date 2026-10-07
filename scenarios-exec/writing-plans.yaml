@@ -1,0 +1,15 @@
+skill: writing-plans
+should_trigger:
+  - 帮我把这个方案写成实施计划
+should_not_trigger:
+  - 直接开始实现这个功能
+execute:
+  task: |
+    我们要在现有 Express 应用里加"用户邮箱改绑"功能（需要旧密码验证 + 新邮箱确认邮件）。请按 skill 的方法写一份实施计划，写入沙箱中的 plan.md。
+  artifacts:
+    - plan.md
+  rubric:
+    - plan.md 存在且非空
+    - 任务被拆成有序的小步骤，每步聚焦一件事
+    - 每步有可验证的完成标准
+    - 覆盖了边界情况（旧密码错误、确认邮件超时、重复改绑至少提及其一）

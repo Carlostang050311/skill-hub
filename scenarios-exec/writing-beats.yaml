@@ -1,0 +1,15 @@
+skill: writing-beats
+should_trigger:
+  - 把这篇文章组织成节拍式的结构
+should_not_trigger:
+  - 直接帮我把文章写完
+execute:
+  task: |
+    素材主题：一个学生用 AI 两天做出一个开源工具的真实经历。请按 skill 的方法把这篇文章组织成节拍（beats）结构，写入沙箱中的 beats.md：只出节拍规划（每个节拍的主题、承载的内容、读者在那个节拍的问题），不写正文。
+  artifacts:
+    - beats.md
+  rubric:
+    - beats.md 存在且非空
+    - 节拍之间有递进关系（不是并列的要点清单）
+    - 每个节拍标注了该节拍要回答的读者问题
+    - 有开头钩子节拍和收尾节拍

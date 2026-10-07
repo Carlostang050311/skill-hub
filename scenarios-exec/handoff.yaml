@@ -1,0 +1,21 @@
+skill: handoff
+should_trigger:
+  - 把当前会话压缩成交接文档
+should_not_trigger:
+  - 总结一下这篇文章
+execute:
+  task: |
+    下面是一段已经发生的会话记录。请按 skill 的方法把它压缩成一份给下一个 agent 的交接文档，写入沙箱中的 handoff.md。
+
+    会话记录：
+    - 用户：帮我把 F:/app 的用户模块从回调风格重构成 async/await，注意不要改行为。
+    - agent：已改完 userService.js 的 3 个函数（getUser/getUserOrders/updateProfile），测试 12 个全过。但 getUserOrders 里有分页参数 page 从 1 开始还是 0 开始，原代码注释和测试断言矛盾（注释说 1-based，测试断言 page=0 返回第二页），我没敢动，保持了原行为。
+    - 用户：好，下一步把订单导出功能加上，支持 CSV。
+    - agent：还没开始。
+  artifacts:
+    - handoff.md
+  rubric:
+    - handoff.md 存在且非空
+    - 记录了已完成的工作（3 个函数重构、12 个测试通过）
+    - 明确标出了未决矛盾（分页 1-based/0-based 注释与断言矛盾）——这是交接最关键的信息
+    - 记录了下一步任务（订单导出 CSV）且未开始

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>skill-hub 质量榜 · Agent Skill 质量层</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #020617; color: #e2e8f0; font: 14px/1.6 -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  h1 .hub { color: #a78bfa; }
+  .sub { color: #64748b; font-size: 13px; margin-bottom: 28px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .card { border: 1px solid #1e293b; background: #0f172a80; border-radius: 10px; padding: 14px 16px; }
+  .card .k { color: #64748b; font-size: 12px; }
+  .card .v { font-size: 26px; font-weight: 600; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  input { width: 280px; padding: 8px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; font: inherit; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: #64748b; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #1e293b; cursor: pointer; user-select: none; white-space: nowrap; }
+  th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td { padding: 7px 10px; border-bottom: 1px solid #1e293b60; }
+  tr:hover td { background: #1e293b40; }
+  td a { color: #a78bfa; text-decoration: none; }
+  td a:hover { text-decoration: underline; }
+  .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; }
+  .g { background: #064e3b; color: #6ee7b7; }
+  .y { background: #451a03; color: #fcd34d; }
+  .r { background: #4c0519; color: #fda4af; }
+  .n { background: #1e293b; color: #94a3b8; }
+  .foot { margin-top: 32px; color: #475569; font-size: 12px; }
+  .foot a { color: #64748b; }
+  .empty { color: #64748b; padding: 40px 0; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>skill<span class="hub">hub</span> 质量榜</h1>
+  <div class="sub" id="sub">Agent Skill 的质量层：skills.sh 告诉你什么装得多，这里告诉你什么真的好。三层评分 = 触发准确性（模型评）+ 指令清晰度（模型评）+ 静态质量（lint）。</div>
+  <div class="cards" id="cards"></div>
+  <input id="q" type="search" placeholder="按 skill 名过滤…">
+  <table>
+    <thead>
+      <tr>
+        <th data-k="name">skill</th>
+        <th class="num" data-k="overall">overall ↓</th>
+        <th class="num" data-k="trigger">触发</th>
+        <th class="num" data-k="clarity">清晰度</th>
+        <th class="num" data-k="staticScore">静态</th>
+        <th data-k="exec">执行级</th>
+        <th class="num" data-k="lastRunId">数据源 run</th>
+      </tr>
+    </thead>
+    <tbody id="rows"><tr><td colspan="7" class="empty">加载中…</td></tr></tbody>
+  </table>
+  <div class="foot">
+    数据来自 skill-hub 对本机真实安装副本的评测（<span id="gen"></span> 生成）·
+    <a href="https://github.com/Carlostang050311/skill-hub">GitHub</a> ·
+    <a href="https://skills.sh/Carlostang050311/skill-hub">skills.sh</a> ·
+    方法与口径见仓库 <a href="https://github.com/Carlostang050311/skill-hub#readme">README</a>
+  </div>
+</div>
+<script>
+let DATA = null;
+let SORT = { k: "overall", dir: -1 };
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmt = (v) => (v == null ? "—" : Math.round(v));
+function gradePill(v) {
+  if (v == null) return '<span class="pill n">无数据</span>';
+  if (v >= 90) return '<span class="pill g">优</span>';
+  if (v >= 70) return '<span class="pill y">良</span>';
+  if (v >= 50) return '<span class="pill y">中</span>';
+  return '<span class="pill r">差</span>';
+}
+function execCell(e) {
+  if (!e) return '<span class="pill n">未执行</span>';
+  const cls = e.score >= 90 ? "g" : e.score >= 60 ? "y" : "r";
+  return `<span class="pill ${cls}">${e.score}%</span> <span style="color:#64748b">${e.passed}/${e.total}</span>`;
+}
+function render() {
+  const q = $("#q").value.trim().toLowerCase();
+  let rows = DATA.skills.filter((s) => !q || s.name.toLowerCase().includes(q));
+  rows = [...rows].sort((a, b) => {
+    const k = SORT.k;
+    const va = k === "name" ? a.name : (a[k] == null ? -1 : (typeof a[k] === "number" ? a[k] : JSON.stringify(a[k])));
+    const vb = k === "name" ? b.name : (b[k] == null ? -1 : (typeof b[k] === "number" ? b[k] : JSON.stringify(b[k])));
+    return (va < vb ? -1 : va > vb ? 1 : 0) * SORT.dir;
+  });
+  $("#rows").innerHTML = rows.map((s) => `<tr>
+    <td><a href="/skills#${esc(s.name)}" title="skill 详情">${esc(s.name)}</a></td>
+    <td class="num">${fmt(s.overall)} ${gradePill(s.overall)}</td>
+    <td class="num">${s.trigger == null ? "—" : fmt(s.trigger) + "%"}</td>
+    <td class="num">${fmt(s.clarity)}</td>
+    <td class="num">${fmt(s.staticScore)}</td>
+    <td>${execCell(s.exec)}</td>
+    <td class="num">#${s.lastRunId || "—"}</td>
+  </tr>`).join("") || '<tr><td colspan="7" class="empty">无匹配</td></tr>';
+}
+document.querySelectorAll("th").forEach((th) => th.addEventListener("click", () => {
+  const k = th.dataset.k;
+  SORT = { k, dir: SORT.k === k ? -SORT.dir : (k === "name" ? 1 : -1) };
+  render();
+}));
+$("#q").addEventListener("input", render);
+fetch("data.json").then((r) => r.json()).then((d) => {
+  DATA = d;
+  const withModel = d.skills.filter((s) => s.overall != null);
+  const avg = Math.round(withModel.reduce((n, s) => n + s.overall, 0) / (withModel.length || 1));
+  $("#cards").innerHTML = [
+    ["上榜 skill", d.skills.length],
+    ["有模型评测", withModel.length],
+    ["平均 overall", avg],
+    ["评测 run 数", d.runs.length],
+  ].map(([k, v]) => `<div class="card"><div class="k">${k}</div><div class="v">${v}</div></div>`).join("");
+  $("#gen").textContent = new Date(d.generatedAt).toLocaleString("zh-CN");
+  render();
+}).catch(() => { $("#rows").innerHTML = '<tr><td colspan="7" class="empty">data.json 加载失败</td></tr>'; });
+</script>
+</body>
+</html>

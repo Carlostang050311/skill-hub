@@ -1,0 +1,16 @@
+skill: review
+should_trigger:
+  - 帮我 review 这个 PR
+  - 审一下这段代码有没有问题
+should_not_trigger:
+  - 直接帮我把这个 bug 修了
+execute:
+  task: |
+    沙箱里有一个 auth.js，实现了一个登录函数。请按 skill 的方法对它做一次代码评审，把评审意见写入沙箱中的 review.md。代码里至少埋了两类问题：一个逻辑 bug（密码比较大小写敏感且未 trim）和一个安全问题（token 直接拼进日志）。
+  artifacts:
+    - review.md
+  rubric:
+    - review.md 存在且非空
+    - 指出了密码比较的逻辑问题（大小写敏感或未做 trim 规整）
+    - 指出了日志泄露 token 的安全问题
+    - 每条意见给出了具体位置或修改建议，而不是泛泛而谈
