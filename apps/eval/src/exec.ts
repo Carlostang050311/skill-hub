@@ -129,6 +129,99 @@ export interface ExecJudgeResult {
   parseError?: string;
 }
 
+/** 宽松匹配键：小写、去掉所有非字母数字汉字字符，容忍评审复述措辞差异 */
+export function normalizeItem(text: string): string {
+  return text.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g, "");
+}
+
+export interface JudgePairResult {
+  /** spec rubric 项数 */
+  total: number;
+  /** 两评审都覆盖到且判定一致的项数 */
+  agree: number;
+  /** 一致率（以两评审都覆盖的项为分母；都未覆盖不计） */
+  agreement: number;
+  /** 评审甲明确通过的 spec 项数 */
+  passedA: number;
+  /** 评审甲未覆盖的 spec 项文本 */
+  missingA: string[];
+  /** 评审乙未覆盖的 spec 项文本 */
+  missingB: string[];
+  /** 评审甲判定未通过的项及证据 */
+  issues: string[];
+}
+
+function indexByNormalized(rubric: Array<{ item: string; pass: boolean; evidence?: string }>): Map<string, { pass: boolean; evidence: string }> {
+  const map = new Map<string, { pass: boolean; evidence: string }>();
+  for (const r of rubric) {
+    const key = normalizeItem(r.item);
+    if (key && !map.has(key)) map.set(key, { pass: r.pass, evidence: r.evidence ?? "" });
+  }
+  return map;
+}
+
+/**
+ * 双评审一致率：spec 逐项在甲乙各自返回里做宽松匹配（归一化文本），
+ * 都覆盖且判定相同计一致；任一未覆盖记入 missing（不冒充"未通过"，也不冒充"一致"）。
+ */
+export function judgeAgreement(spec: ExecSpec, judgeARaw: string, judgeBRaw: string): JudgePairResult {
+  const parse = (raw: string) => {
+    const parsed = parseModelJson(raw);
+    if (!parsed || !Array.isArray(parsed.rubric)) return null;
+    return (parsed.rubric as Array<Record<string, unknown>>)
+      .filter((r) => typeof r.item === "string")
+      .map((r) => ({ item: String(r.item), pass: r.pass === true, evidence: typeof r.evidence === "string" ? r.evidence : "" }));
+  };
+  const rubricA = parse(judgeARaw);
+  const rubricB = parse(judgeBRaw);
+  const total = spec.rubric.length;
+  if (!rubricA || !rubricB) {
+    return { total, agree: 0, agreement: 0, passedA: 0, missingA: [...spec.rubric], missingB: [...spec.rubric], issues: ["评审 JSON 缺失或无法解析"] };
+  }
+  const mapA = indexByNormalized(rubricA);
+  const mapB = indexByNormalized(rubricB);
+  let agree = 0;
+  let bothCovered = 0;
+  let passedA = 0;
+  const missingA: string[] = [];
+  const missingB: string[] = [];
+  const issues: string[] = [];
+  for (const item of spec.rubric) {
+    const key = normalizeItem(item);
+    const inA = mapA.get(key) ?? ((): { pass: boolean; evidence: string } | undefined => {
+      // 归一化键未命中时，尝试 judge 项包含 spec 项的反向宽松匹配
+      for (const [judgeKey, value] of mapA) {
+        if (judgeKey.includes(key) || key.includes(judgeKey)) return value;
+      }
+      return undefined;
+    })();
+    const inB = mapB.get(key) ?? ((): { pass: boolean; evidence: string } | undefined => {
+      for (const [judgeKey, value] of mapB) {
+        if (judgeKey.includes(key) || key.includes(judgeKey)) return value;
+      }
+      return undefined;
+    })();
+    if (!inA) missingA.push(item);
+    if (!inB) missingB.push(item);
+    if (inA && inB) {
+      bothCovered += 1;
+      if (inA.pass === inB.pass) agree += 1;
+    }
+    if (inA) {
+      if (inA.pass) passedA += 1;
+      else issues.push(item.slice(0, 40) + (inA.evidence ? "：" + inA.evidence.slice(0, 80) : ""));
+    }
+  }
+  return {
+    total,
+    agree,
+    agreement: bothCovered > 0 ? Math.round((agree / bothCovered) * 100) : 0,
+    passedA,
+    missingA,
+    missingB,
+    issues,
+  };
+}
 export function scoreExec(spec: ExecSpec, judgeRaw: string): ExecJudgeResult {
   const parsed = parseModelJson(judgeRaw);
   if (!parsed || !Array.isArray(parsed.rubric)) {

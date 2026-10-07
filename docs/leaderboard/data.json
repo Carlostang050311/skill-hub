@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-07T04:12:38.438Z",
+  "generatedAt": "2026-10-07T05:15:54.499Z",
   "repo": "Carlostang050311/skill-hub",
   "runs": [
     {
@@ -57,7 +57,7 @@
         "score": 100,
         "passed": 4,
         "total": 4,
-        "runAt": "2026-10-04T04:27:44.190Z"
+        "runAt": "2026-10-07T05:15:54.171Z"
       }
     },
     {
@@ -71,7 +71,7 @@
         "score": 100,
         "passed": 4,
         "total": 4,
-        "runAt": "2026-10-04T04:27:44.190Z"
+        "runAt": "2026-10-07T05:15:54.171Z"
       }
     },
     {
@@ -85,7 +85,7 @@
         "score": 100,
         "passed": 4,
         "total": 4,
-        "runAt": "2026-10-04T04:27:44.190Z"
+        "runAt": "2026-10-07T05:15:54.171Z"
       }
     },
     {
@@ -159,6 +159,20 @@
       "staticScore": 100,
       "lastRunId": 9,
       "exec": null
+    },
+    {
+      "name": "writing-beats",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": {
+        "score": 100,
+        "passed": 4,
+        "total": 4,
+        "runAt": "2026-10-07T05:15:54.171Z"
+      }
     },
     {
       "name": "claude-typer",
@@ -305,15 +319,6 @@
       "exec": null
     },
     {
-      "name": "writing-beats",
-      "overall": 98,
-      "trigger": 100,
-      "clarity": 93,
-      "staticScore": 100,
-      "lastRunId": 9,
-      "exec": null
-    },
-    {
       "name": "writing-fragments",
       "overall": 98,
       "trigger": 100,
@@ -366,6 +371,20 @@
       "staticScore": 90,
       "lastRunId": 9,
       "exec": null
+    },
+    {
+      "name": "review",
+      "overall": 96,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 100,
+      "lastRunId": 6,
+      "exec": {
+        "score": 100,
+        "passed": 4,
+        "total": 4,
+        "runAt": "2026-10-07T05:15:54.171Z"
+      }
     },
     {
       "name": "baoyu-design",
@@ -473,15 +492,6 @@
       "clarity": 87,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
-    },
-    {
-      "name": "review",
-      "overall": 96,
-      "trigger": 100,
-      "clarity": 87,
-      "staticScore": 100,
-      "lastRunId": 6,
       "exec": null
     },
     {
@@ -701,21 +711,54 @@
       "exec": null
     },
     {
-      "name": "ask-matt",
-      "overall": 94,
-      "trigger": 100,
-      "clarity": 80,
-      "staticScore": 100,
-      "lastRunId": 9,
-      "exec": null
-    },
-    {
       "name": "brainstorming",
       "overall": 94,
       "trigger": 100,
       "clarity": 80,
       "staticScore": 100,
       "lastRunId": 6,
+      "exec": {
+        "score": 100,
+        "passed": 4,
+        "total": 4,
+        "runAt": "2026-10-07T05:15:54.171Z"
+      }
+    },
+    {
+      "name": "to-prd",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": {
+        "score": 100,
+        "passed": 4,
+        "total": 4,
+        "runAt": "2026-10-07T05:15:54.171Z"
+      }
+    },
+    {
+      "name": "writing-plans",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": {
+        "score": 100,
+        "passed": 4,
+        "total": 4,
+        "runAt": "2026-10-07T05:15:54.171Z"
+      }
+    },
+    {
+      "name": "ask-matt",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 9,
       "exec": null
     },
     {
@@ -782,15 +825,6 @@
       "exec": null
     },
     {
-      "name": "to-prd",
-      "overall": 94,
-      "trigger": 100,
-      "clarity": 80,
-      "staticScore": 100,
-      "lastRunId": 9,
-      "exec": null
-    },
-    {
       "name": "ubiquitous-language",
       "overall": 94,
       "trigger": 100,
@@ -854,13 +888,18 @@
       "exec": null
     },
     {
-      "name": "writing-plans",
-      "overall": 94,
+      "name": "json-canvas",
+      "overall": 93,
       "trigger": 100,
-      "clarity": 80,
-      "staticScore": 100,
+      "clarity": 87,
+      "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "exec": {
+        "score": 100,
+        "passed": 4,
+        "total": 4,
+        "runAt": "2026-10-07T05:15:54.171Z"
+      }
     },
     {
       "name": "diagnosing-plugins",
@@ -923,15 +962,6 @@
       "clarity": 87,
       "staticScore": 90,
       "lastRunId": 6,
-      "exec": null
-    },
-    {
-      "name": "json-canvas",
-      "overall": 93,
-      "trigger": 100,
-      "clarity": 87,
-      "staticScore": 90,
-      "lastRunId": 9,
       "exec": null
     },
     {
@@ -1205,6 +1235,20 @@
       "exec": null
     },
     {
+      "name": "handoff",
+      "overall": 90,
+      "trigger": 100,
+      "clarity": 67,
+      "staticScore": 100,
+      "lastRunId": 9,
+      "exec": {
+        "score": 100,
+        "passed": 4,
+        "total": 4,
+        "runAt": "2026-10-07T05:15:54.171Z"
+      }
+    },
+    {
       "name": "aihot",
       "overall": 90,
       "trigger": null,
@@ -1229,15 +1273,6 @@
       "clarity": null,
       "staticScore": 90,
       "lastRunId": 2,
-      "exec": null
-    },
-    {
-      "name": "handoff",
-      "overall": 90,
-      "trigger": 100,
-      "clarity": 67,
-      "staticScore": 100,
-      "lastRunId": 9,
       "exec": null
     },
     {
@@ -1490,7 +1525,12 @@
       "clarity": 53,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "exec": {
+        "score": 100,
+        "passed": 4,
+        "total": 4,
+        "runAt": "2026-10-07T05:15:54.171Z"
+      }
     },
     {
       "name": "html-anything-article-magazine",
