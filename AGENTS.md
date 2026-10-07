@@ -16,13 +16,16 @@
 2. 必须编写和更新相关的测试，交付前所有测试必须全绿（`npm test`）。
 3. 交付前必须真实运行验证：CLI 跑真实 skill 目录，Web 页面真实打开渲染检查。
 4. Windows 环境：源文件统一 LF（`.gitattributes` 强制）；路径处理一律 `node:path`，不手拼字符串。
-5. 分阶段交付：Phase 0 索引核心+CLI → Phase 1 Web UI → Phase 2 评测框架 → Phase 3 分发同步，每阶段独立验收。
 
 ## 架构
 
 npm workspaces monorepo，TypeScript 全栈：
 
-- `packages/core`：多目录 scanner、frontmatter parser、内容指纹去重、静态质量信号、依赖图谱
-- `packages/cli`：commander，`skillhub scan | list | search | show | roots`
-- `apps/web`（Phase 1）：Next.js 15 + Tailwind + Drizzle ORM/SQLite
-- `apps/eval`（Phase 2）：评测 runner，scenario YAML + rubric 分层打分
+- `packages/core`：多目录 scanner、frontmatter parser、内容指纹去重、静态质量信号、依赖图谱、分发/GitHub/推荐引擎
+- `packages/cli`：commander，`skillhub scan | list | search | show | roots | install | uninstall | outdated | pack | github-install | origins | outdated-remote | recommend | search-remote | adopt`
+- `apps/web`：Next.js 15 + Tailwind v4 仪表盘（localhost:3457）
+- `apps/eval`：`skillhub-eval`（trigger/gen/exec 三类评测 + export 榜单导出）+ node:sqlite 报告库
+- `packages/mcp`：MCP server（recommend_skills / get_skill / library_stats），`SKILLHUB_HOME` 可指向自定义主目录
+- `scripts/hook`：ZCode UserPromptSubmit 主动推荐 hook
+
+评测报告存 `~/.skillhub/eval.db`（node:sqlite）；来源注册表 `~/.skillhub/origins.json`；GitHub 克隆缓存 `~/.skillhub/github-cache/`。

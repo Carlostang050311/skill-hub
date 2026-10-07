@@ -14,10 +14,10 @@ Skill 本质 = frontmatter（name/description）+ 正文指令 + 附属资源文
 
 - **索引**：扫描 `~/.agents/skills`、`~/.claude/skills`、`~/.codex/skills` 与 Claude/ZCode 插件缓存，解析 frontmatter，内容指纹去重、静态质量信号（description 截断风险、缺失资源引用、name 规范等）、显式引用 + 正文提及两路依赖信号
 - **Web UI**（Next.js 15）：总览、技能库搜索、详情（正文渲染 + 引用/提及网络 + 一键安装）、依赖图谱（链接实线 / 提及虚线）、同步状态（漂移检测 + 一键对齐）、评测报告与历史趋势（跨 run 对比、同名 skill 修复前后变化）
-- **评测框架**：scenario YAML（触发正/反用例）→ `plan` 生成作业 → 模型端跑批（ZCode 子代理或 OpenAI 兼容 API）→ `ingest` 三层评分入库（触发 40% + 清晰度 30% + 静态 30%）
+- **评测框架**：scenario YAML（触发正/反用例）→ `plan` 生成作业 → 模型端跑批（ZCode 子代理或 OpenAI 兼容 API）→ `ingest` 三层评分入库（触发 40% + 清晰度 30% + 静态 30%）；**执行级评测**（`exec`）让 skill 在沙箱真实干活，双评审独立复核
 - **分发同步**：`install/uninstall/outdated/pack`，同名多副本按 agents > claude > codex 选源，冲突需 `--force`
-- **GitHub 生态**：`github-install <owner/repo>`（发现 SKILL.md → 查重 → 安装 → 登记来源）、`origins` 上游注册表、`outdated-remote` 目录指纹对比上游（`--apply` 一键更新）
-- **agent 查库**：`recommend "<任务描述>"` 按任务推荐 skill（中英文关键词 + 质量信号参与排序），配套 meta-skill `skill-finder` 让编码代理干活前自动查库（随仓库 `skills/` 目录分发）
+- **GitHub 生态**：`github-install <owner/repo>`（发现 SKILL.md → 查重 → 安装 → 登记来源）、`origins` 上游注册表、`outdated-remote` 目录指纹对比上游（`--apply` 一键更新）；`search-remote` 直接搜 skills.sh 全生态，`adopt` 把搜到的 skill 收编进本机管理体系
+- **agent 查库**：`recommend "<任务描述>"` 按任务推荐 skill（中英文关键词 + 质量信号参与排序），配套 meta-skill `skill-finder` 让编码代理干活前自动查库（随仓库 `skills/` 目录分发）；可选 `scripts/hook/prompt-recommend.mjs`（ZCode UserPromptSubmit hook）在每条用户消息时主动注入推荐
 
 ![依赖图谱](docs/screenshots/04-graph.png)
 
@@ -68,15 +68,20 @@ npm run skillhub -- recommend "把这篇文章做成小红书图文卡片"   # C
 }
 ```
 
-暴露三个工具：`recommend_skills`（任务→推荐）、`get_skill`（详情+正文）、`library_stats`（库统计）。配套 meta-skill `skills/skill-finder` 定义了 agent 的查库决策规则。
+暴露三个工具：`recommend_skills`（任务→推荐）、`get_skill`（详情+正文）、`library_stats`（库统计）。配套 meta-skill `skills/skill-finder` 定义了 agent 的查库决策规则。设 `SKILLHUB_HOME` 环境变量可指向自定义主目录（默认本机）。
+
+## 公开质量榜
+
+[skill-hub 质量榜](https://carlostang050311.github.io/skill-hub/leaderboard/)——skills.sh 告诉你什么装得多，这里告诉你什么真的好。数据由 `npm run skillhub-eval -- export` 从本地评测库生成（docs/leaderboard/data.json + 静态页），随评测更新。
 
 ## 真实运行数据
 
-在本机 300+ 个真实 skill 的库上：
+在本机 318 个真实 skill 的库上：
 
-- 索引 317 个 skill，发现 83 组同名、8 组内容漂移、3 个坏 frontmatter（未加引号的 description 含 `": "`）
-- 评测 4 轮（24 个 skill、171 个作业）：触发准确率 100%，抓出 description 缺失、正文自相矛盾、依赖不匹配等真实缺陷
-- 上游检测抓到歸藏仓库的真实更新
+- 9 轮评测、累计约 1700 个作业，184 个 skill 有公开评分；触发准确率 100%、零过触发
+- 抓出 description 缺失、正文自相矛盾、依赖不匹配、硬编码路径等真实缺陷（含 skill-hub 自己的 skill）
+- 执行级评测 11 个 skill 在沙箱真实干活，双评审独立复核全部满分
+- 上游检测抓到第三方仓库的真实更新
 
 ## 架构
 
@@ -85,8 +90,10 @@ npm workspaces monorepo，TypeScript 全栈：
 ```
 packages/core   索引/解析/指纹/质量信号/图谱/分发/GitHub/推荐
 packages/cli    skillhub 命令行
+packages/mcp    MCP server（recommend_skills / get_skill / library_stats）
 apps/web        Next.js 15 + Tailwind v4 仪表盘
-apps/eval       评测 runner + node:sqlite 报告库
+apps/eval       评测 runner（含执行级 + 生成器）+ node:sqlite 报告库
+scripts/hook    ZCode UserPromptSubmit 主动推荐 hook
 ```
 
 ## License
