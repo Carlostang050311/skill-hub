@@ -54,7 +54,12 @@ function scoreSkill(record: SkillRecord, terms: QueryTerms, task: string): Recom
   const nameLower = record.name.toLowerCase();
   const nameCore = nameLower.replace(/-skill$/, "");
   const taskLower = task.toLowerCase();
-  if (taskLower.includes(nameLower) || taskLower.includes(nameCore)) {
+  // 短名（≤3 字符，如 pr/qa）做子串匹配会撞上 prompt/quality 等英文词，必须词边界
+  const shortName = nameLower.length <= 3;
+  const nameHit = shortName
+    ? new RegExp(`(^|[^a-z0-9-])${nameLower}([^a-z0-9-]|$)`).test(taskLower)
+    : taskLower.includes(nameLower) || taskLower.includes(nameCore);
+  if (nameHit) {
     score += NAME_HIT;
     reasons.push("任务描述中直接提到了这个 skill");
   } else if (terms.latin.some((t) => nameLower.includes(t) && t.length >= 4)) {

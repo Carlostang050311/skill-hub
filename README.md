@@ -1,5 +1,7 @@
 # skill-hub
 
+[![CI](https://github.com/Carlostang050311/skill-hub/actions/workflows/ci.yml/badge.svg)](https://github.com/Carlostang050311/skill-hub/actions/workflows/ci.yml)
+
 [中文](README.md) | [English](README.en.md)
 
 本地优先的 Agent Skill 管理与评测平台：把散落在多个 agent 目录的 skill 变成带元数据的数据库 + 可执行的评测闭环。

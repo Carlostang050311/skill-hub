@@ -14,9 +14,8 @@ describe("extractPrompt", () => {
     expect(extractPrompt(null)).toBe("");
   });
 
-  it("JSON 但没有已知字段时回退原文", () => {
-    const raw = '{"other":1}';
-    expect(extractPrompt(raw)).toBe(raw);
+  it("JSON 但没有已知字段时返回空（防止键名自匹配）", () => {
+    expect(extractPrompt('{"other":1,"prompt2":"x"}')).toBe("");
   });
 });
 

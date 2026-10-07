@@ -1,5 +1,7 @@
 # skill-hub
 
+[![CI](https://github.com/Carlostang050311/skill-hub/actions/workflows/ci.yml/badge.svg)](https://github.com/Carlostang050311/skill-hub/actions/workflows/ci.yml)
+
 [中文](README.md) | [English](README.en.md)
 
 Local-first management & evaluation platform for AI agent skills: turn skills scattered across multiple agent directories into a metadata database with an executable evaluation loop.

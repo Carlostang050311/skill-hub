@@ -62,6 +62,13 @@ describe("recommendSkills", () => {
     expect(cleanScore).toBeGreaterThan(noisyScore);
   });
 
+  it("短名（≤3 字符）不在词边界时不算名称直击", () => {
+    // 真实事故：hook 把 "/goal 继续优化" 推荐成 pr——"prompt" 一词含 "pr"
+    const prSkill = rec("pr", "创建和审查 pull request，支持 pr 模板与评审流程。");
+    const result = recommendSkills([prSkill], "/goal 继续优化 prompt 质量");
+    expect(result).toEqual([]);
+  });
+
   it("无关任务不产生推荐", () => {
     expect(recommendSkills(skills, " quantum chromodynamics ")).toEqual([]);
   });

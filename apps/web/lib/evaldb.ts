@@ -17,6 +17,40 @@ export const getEvalData = cache((): EvalData | null => {
   return { runs: listRuns(db), latest: latestRun(db) };
 });
 
+export interface ExecSkillRow {
+  skill: string;
+  score: number;
+  passed: number;
+  total: number;
+  runAt: string;
+}
+
+/** 执行级评测成绩：取每个 skill 最新一次的官方分。exec ingest 按相对路径写入，位置随启动目录变化，多候选探测 */
+export const getExecResults = cache((): ExecSkillRow[] => {
+  const candidates = [
+    path.join(os.homedir(), ".skillhub", "exec-runs.json"),
+    path.join(process.cwd(), ".skillhub", "exec-runs.json"),
+    path.join(process.cwd(), "..", "..", ".skillhub", "exec-runs.json"),
+  ];
+  const file = candidates.find((p) => fs.existsSync(p));
+  if (!file) return [];
+  try {
+    const runs = JSON.parse(fs.readFileSync(file, "utf8")) as Array<{
+      runAt: string;
+      results?: Array<{ skill: string; score: number; rubricPassed: number; rubricTotal: number }>;
+    }>;
+    const bySkill = new Map<string, ExecSkillRow>();
+    for (const run of runs) {
+      for (const r of run.results ?? []) {
+        bySkill.set(r.skill, { skill: r.skill, score: r.score, passed: r.rubricPassed, total: r.rubricTotal, runAt: run.runAt });
+      }
+    }
+    return [...bySkill.values()].sort((a, b) => a.skill.localeCompare(b.skill));
+  } catch {
+    return [];
+  }
+});
+
 export interface FullRun {
   summary: RunSummaryRow;
   report: RunReport;

@@ -17,19 +17,23 @@ const DEDUPE_WINDOW_MS = 30 * 60 * 1000;
 
 export function extractPrompt(raw) {
   let text = raw == null ? "" : String(raw);
+  let parsed = null;
   try {
-    const obj = JSON.parse(text);
-    if (obj && typeof obj === "object") {
-      for (const key of ["prompt", "user_prompt", "userPrompt", "message", "text", "input"]) {
-        const v = obj[key];
-        if (typeof v === "string" && v.trim()) {
-          text = v;
-          break;
-        }
+    parsed = JSON.parse(text);
+  } catch {
+    parsed = null;
+  }
+  if (parsed && typeof parsed === "object") {
+    for (const key of ["prompt", "user_prompt", "userPrompt", "message", "text", "input"]) {
+      const v = parsed[key];
+      if (typeof v === "string" && v.trim()) {
+        text = v;
+        return text.trim();
       }
     }
-  } catch {
-    // 不是 JSON 就按原始文本处理
+    // JSON 里没有已知 prompt 字段：宁可不推荐，也不能拿原始 JSON 自匹配
+    // （键名如 "prompt" 含 "pr"，会把无关 skill 顶上榜）
+    return "";
   }
   return text.trim();
 }
@@ -66,8 +70,11 @@ function recordShown(name) {
       state = {};
     }
     state[name] = Date.now();
+    // 上限 200 条，最旧的先淘汰，防无限增长
+    const entries = Object.entries(state).sort((a, b) => a[1] - b[1]);
+    while (entries.length > 200) entries.shift();
     fs.mkdirSync(path.dirname(STATE_FILE), { recursive: true });
-    fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2) + "\n", "utf8");
+    fs.writeFileSync(STATE_FILE, JSON.stringify(Object.fromEntries(entries), null, 2) + "\n", "utf8");
   } catch {
     // 状态记录失败不影响主流程
   }
@@ -75,6 +82,13 @@ function recordShown(name) {
 
 function main() {
   const raw = readStdinSync();
+  // 输入快照：便于对照 ZCode 实际传参形状，持续改进字段提取（每次覆盖，上限 2KB）
+  try {
+    fs.mkdirSync(path.dirname(STATE_FILE), { recursive: true });
+    fs.writeFileSync(path.join(path.dirname(STATE_FILE), "hook-last-input.txt"), raw.slice(0, 2048), "utf8");
+  } catch {
+    // 快照失败不影响主流程
+  }
   const prompt = extractPrompt(raw);
   if (prompt.length < MIN_PROMPT_CHARS || prompt.startsWith("/")) return;
   const probe = prompt.slice(0, MAX_PROMPT_CHARS);

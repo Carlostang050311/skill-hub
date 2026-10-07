@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Badge, Bar, Card, Mono, SectionTitle, Stat, gradeTone } from "@/components/ui";
 import { TrendChart } from "@/components/TrendChart";
 import { getScan } from "@/lib/data";
-import { getAllRunReports, getEvalData } from "@/lib/evaldb";
+import { getAllRunReports, getEvalData, getExecResults } from "@/lib/evaldb";
 import { gradeOf, healthScore, warningCategories } from "@/lib/health";
 import { buildTrend, skillDeltas } from "@/lib/trend";
 
@@ -37,6 +37,36 @@ export default function EvalPage() {
               <Stat label="平均静态" value={Math.round(latest.summary.avgStatic)} />
             </div>
           </Card>
+
+          {(() => {
+            const execRows = getExecResults();
+            if (execRows.length === 0) return null;
+            return (
+              <Card>
+                <SectionTitle hint="沙箱真实作业 + 双评审独立复核">执行级实测成绩</SectionTitle>
+                <div className="grid grid-cols-2 gap-2 text-xs md:grid-cols-4 lg:grid-cols-6">
+                  {execRows.map((r) => (
+                    <div key={r.skill} className="rounded-lg border border-slate-800 bg-slate-950/40 p-3">
+                      <Link href={`/skills/${r.skill}`} className="block truncate text-slate-200 hover:text-violet-300">
+                        {r.skill}
+                      </Link>
+                      <div className="mt-1 flex items-baseline justify-between">
+                        <span className={r.score === 100 ? "text-emerald-400" : r.score >= 50 ? "text-amber-400" : "text-rose-400"}>
+                          {r.score}
+                        </span>
+                        <span className="tabular-nums text-slate-600">
+                          {r.passed}/{r.total}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-2 text-[10px] text-slate-600">
+                  共 {execRows.length} 个 skill 执行过沙箱任务；每格为官方评审通过率（{execRows[0]?.passed}/{execRows[0]?.total} 制）。
+                </p>
+              </Card>
+            );
+          })()}
 
           <Card className="overflow-x-auto p-0">
             <table className="w-full min-w-[860px] text-sm">

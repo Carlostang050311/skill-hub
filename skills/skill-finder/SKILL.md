@@ -1,5 +1,6 @@
 ---
 name: skill-finder
+license: MIT
 description: "在动手之前先查本机 skill 库：当用户提出任务请求，而你不确定库里是否已有现成 skill、或想在多个候选 skill 里挑最合适的时，用 skillhub recommend 按任务描述检索并推荐。适用：用户说'有没有能做 X 的 skill'、'用现成工具做这件事'、任务看起来像某个 skill 的典型场景、或你记忆里的 skill 与实际安装情况可能不一致。不适用：用户已明确指定用哪个 skill、任务明显没有对应 skill。"
 ---
 
