@@ -87,3 +87,15 @@ cd F:/Coding/skill-hub && gh skill publish --dry-run    # EXIT=0
 - `npx -y skills --help` 第 1 次调用：npm registry 直连 ETIMEDOUT → 第 2 次成功（间歇性网络，重试 1 次，未超 3 次上限）
 - https://www.skills.ai ：返回空内容，无法用于验证
 - 无其他失败项；github.com 克隆一次成功
+
+## 复查（2026-10-07，收录次日+1）
+
+三个探测点全部通过，收录稳定且已完全同步：
+
+| 探测点 | 10-06 当时 | 本次复查 |
+| --- | --- | --- |
+| skill 详情页（/Carlostang050311/skill-hub/skill-finder） | 已出现，0 installs | **正常，installs = 1**，First seen: 1 day ago，SKILL.md 预览完整 |
+| CLI `npx -y skills find skill-finder --owner Carlostang050311` | No skills found | **命中**：`carlostang050311/skill-hub@skill-finder · 1 install`，并给出详情页链接 |
+| 网页搜索 /search?q=skill-finder | 结果为空 | WebFetch 抓到的仍是空框架（前端客户端渲染，抓取器看不到数据）；但 CLI find 命中同一搜索 API，数据层已同步 |
+
+结论：**listed 且稳定**。搜索端点同步已完成（CLI 可发现）；详情页 installs 从 0 变 1（计入的是 10-06 那次试装）。安全审计标注不变（Agent Trust Hub — Fail、Socket — Warn，页面原始内容，未处理）。
