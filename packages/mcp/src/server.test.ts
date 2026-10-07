@@ -33,7 +33,7 @@ function rpc(child2: ChildProcessWithoutNullStreams, message: Record<string, unk
   });
 }
 
-describe("MCP server（stdio JSON-RPC）", () => {
+describe.skipIf(!fs.existsSync(SERVER_PATH))("MCP server（stdio JSON-RPC）", () => {
   afterEach(() => {
     child?.kill();
     child = null;
