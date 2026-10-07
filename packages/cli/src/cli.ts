@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from "commander";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -25,6 +26,7 @@ import {
   type SkillRecord,
   type TargetKind,
 } from "@skillhub/core";
+import { parseSkillsFindOutput } from "./find-parse.js";
 
 const VERSION = "0.1.0";
 const ORIGINS_FILE = path.join(os.homedir(), ".skillhub", "origins.json");
@@ -524,7 +526,114 @@ export async function main(argv: string[]): Promise<void> {
     }
   });
 
+  const searchRemote = program.command("search-remote <keyword...>").description("在 skills.sh 全生态搜索 skill");
+  searchRemote.option("--owner <owner>", "限定 owner").option("--json", "JSON 输出");
+  searchRemote.action((keyword: string[], opts: { owner?: string; json?: boolean }) => {
+    const args = ["-y", "skills", "find", keyword.join(" ")];
+    if (opts.owner) args.push("--owner", opts.owner);
+    const run = spawnNpx(args);
+    const hits = parseSkillsFindOutput(run.stdout ?? "");
+    if (opts.json) {
+      printJson(hits);
+      return;
+    }
+    if (hits.length === 0) {
+      console.log("没有找到匹配的 skill" + (run.stderr ? `（${run.stderr.trim().slice(-120)}）` : ""));
+      return;
+    }
+    for (const h of hits) {
+      console.log(`${h.repo}@${h.skill}  ${h.installs} installs`);
+      console.log(`  ${h.url || "(无链接)"}`);
+      console.log(`  安装：skillhub adopt ${h.repo} --skill ${h.skill}`);
+    }
+  });
+
+  const adopt = program.command("adopt <owner/repo>").description("把 skills.sh 生态的 skill 收编进本机管理体系（安装 + 登记 + 纳入评测覆盖）");
+  adopt
+    .option("--to <kind>", "目标：agents / claude / codex", "agents")
+    .option("--skill <names>", "只装这些 skill（逗号分隔）")
+    .option("--force", "目标内容不同时覆盖")
+    .option("--home <dir>", "覆盖用户主目录")
+    .option("--json", "JSON 输出");
+  adopt.action((ownerRepo: string, opts: { to: string; skill?: string; force?: boolean; home?: string; json?: boolean }) => {
+    if (!isTargetKind(opts.to)) {
+      console.error("--to 只支持 agents / claude / codex");
+      process.exitCode = 1;
+      return;
+    }
+    const synced = syncRepoCache(ownerRepo, GITHUB_CACHE_ROOT);
+    const records = discoverSkills(synced.dir);
+    if (records.length === 0) {
+      console.error("仓库里没有发现 SKILL.md");
+      process.exitCode = 1;
+      return;
+    }
+    const byName = new Map<string, SkillRecord>();
+    for (const r of records) {
+      if (!byName.has(r.name)) byName.set(r.name, r);
+    }
+    const names = opts.skill ? opts.skill.split(",").map((s) => s.trim()).filter(Boolean) : [...byName.keys()];
+    const targetRoot = targetDirFor(opts.to as TargetKind);
+    const adopted: Array<Record<string, unknown>> = [];
+    for (const name of names) {
+      const record = byName.get(name);
+      if (!record) {
+        if (opts.json) adopted.push({ name, error: `仓库里没有名为 ${name} 的 skill` });
+        else console.error(`✗ ${name}：仓库里没有这个 skill`);
+        process.exitCode = 1;
+        continue;
+      }
+      try {
+        const result = installSkill(records, name, { to: { dir: targetRoot }, force: opts.force });
+        if (result.status === "installed") {
+          recordOrigin(ORIGINS_FILE, name, {
+            repo: ownerRepo,
+            skillPath: record.relativeId,
+            dirName: record.dirName,
+            targetDir: targetRoot,
+            dirHash: hashDir(result.targetPath),
+          });
+        }
+        adopted.push({ name, status: result.status, targetPath: result.targetPath });
+        if (!opts.json) {
+          if (result.status === "installed") console.log(`已收编：${name} → ${result.targetPath}`);
+          else if (result.status === "identical") console.log(`已是最新：${name}`);
+          else console.log(`冲突：${name}（加 --force 覆盖）`);
+        }
+      } catch (err) {
+        if (opts.json) adopted.push({ name, error: err instanceof Error ? err.message : String(err) });
+        else console.error(`✗ ${name}：${err instanceof Error ? err.message : String(err)}`);
+        process.exitCode = 1;
+      }
+    }
+    if (!opts.json) {
+      console.log("已登记上游（outdated-remote 可检更新）；评测覆盖将在下次 gen plan 或每周巡检自动补齐。");
+    } else {
+      printJson({ repo: ownerRepo, adopted, origins: "registered", evalQueue: "next gen plan" });
+    }
+  });
+
   await program.parseAsync(argv, { from: "user" });
+}
+
+/** 跨平台调 npx：直连 npx-cli.js（Windows 的 .cmd 不能被无 shell 调用；字面量命令 + 参数向量） */
+function spawnNpx(args: string[]): { stdout: string; stderr: string } {
+  const npxCli = path.join(path.dirname(process.execPath), "node_modules", "npm", "bin", "npx-cli.js");
+  if (!fs.existsSync(npxCli)) {
+    return { stdout: "", stderr: `找不到 npx-cli.js（npm 安装不完整）：${npxCli}` };
+  }
+  const argv: string[] = [npxCli, ...args];
+  try {
+    const stdout = execFileSync("node", argv, {
+      encoding: "utf8",
+      timeout: 120_000,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    return { stdout, stderr: "" };
+  } catch (err) {
+    const e = err as { stdout?: string; stderr?: string; message?: string };
+    return { stdout: e.stdout ?? "", stderr: e.stderr ?? e.message ?? String(err) };
+  }
 }
 
 function resolveTarget(value: string, home?: string): TargetKind | { dir: string } {

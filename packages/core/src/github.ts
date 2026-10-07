@@ -53,6 +53,8 @@ export interface SyncedRepo {
   dir: string;
   /** true = 拉取了上游新提交（或首次克隆），false = 缓存未变化 */
   refreshed: boolean;
+  /** true = fetch 失败，用的是本地缓存（可能落后于上游） */
+  stale?: boolean;
 }
 
 /** 把 owner/repo 的浅克隆同步到缓存目录：存在则 fetch+reset，不存在则按 SSH→HTTPS 顺序克隆；urls 可覆盖（测试用本地仓库） */
@@ -69,10 +71,17 @@ export function syncRepoCache(ownerRepo: string, cacheRoot: string, opts?: { url
   }
   if (fs.existsSync(path.join(dest, ".git"))) {
     const before = hashDir(dest);
-    runGit(["fetch", "--depth", "1", "origin"], dest);
-    runGit(["reset", "--hard", "FETCH_HEAD"], dest);
-    const after = hashDir(dest);
-    return { dir: dest, refreshed: before !== after };
+    // fetch 失败（离线/网络窗口）时降级用本地缓存，不让 adopt/outdated 完全不可用
+    let refreshed = false;
+    let stale = false;
+    try {
+      runGit(["fetch", "--depth", "1", "origin"], dest);
+      runGit(["reset", "--hard", "FETCH_HEAD"], dest);
+      refreshed = hashDir(dest) !== before;
+    } catch {
+      stale = true;
+    }
+    return { dir: dest, refreshed, stale };
   }
   fs.mkdirSync(cacheRoot, { recursive: true });
   let lastError: Error | null = null;
