@@ -1,6 +1,8 @@
 export * from "./types.js";
 export * from "./parser.js";
 export * from "./hash.js";
+export * from "./snapshot.js";
+export * from "./backups.js";
 export * from "./quality.js";
 export * from "./graph.js";
 export * from "./scanner.js";
@@ -8,3 +10,6 @@ export * from "./groups.js";
 export * from "./distribute.js";
 export * from "./github.js";
 export * from "./recommend.js";
+export * from "./catalog.js";
+export * from "./repair.js";
+export * from "./collisions.js";

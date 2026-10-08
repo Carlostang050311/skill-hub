@@ -77,4 +77,31 @@ describe("recommendSkills", () => {
     const result = recommendSkills(skills, "帮我处理 youtube 和 小红书 和 文章", 2);
     expect(result).toHaveLength(2);
   });
+
+  it("固定任务集验证 top-1 和无关任务，包含中英文表达与同义词", () => {
+    const bank = [...skills, rec("academic-pptx", "Build academic slides."), rec("prototype", "Build interactive prototypes."), rec("playwright", "Browser automation and screenshots.")];
+    const cases = [
+      ["做一份演示文稿介绍研究成果", "academic-pptx"],
+      ["帮我把文章去AI味", "humanizer-zh"],
+      ["把长视频切片", "youtube-clipper"],
+      ["先写失败用例，再用测试驱动实现", "tdd"],
+      ["为新页面做浏览器验收和截图", "playwright"],
+      ["做一个可以点击的原型", "prototype"],
+      ["build academic slides", "academic-pptx"],
+      ["clip youtube video", "youtube-clipper"],
+    ];
+    const hits = cases.filter(([query, expected]) => recommendSkills(bank, query!)[0]?.name === expected).length;
+    expect(hits).toBe(cases.length);
+    expect(recommendSkills(bank, "帮我预测彩票号码")).toEqual([]);
+    expect(recommendSkills(bank, "prompt quality quantum chromodynamics")).toEqual([]);
+  });
+
+  it("只排除声明不兼容的客户端，未知兼容性明确保留标识", () => {
+    const claudeOnly = { ...rec("private-slides", "制作演示文稿"), extraFrontmatter: { skillhub: { clients: ["claude"], aliases: ["PPT"] } } };
+    const unknown = rec("academic-pptx", "学术演示文稿");
+    const result = recommendSkills([claudeOnly, unknown], "做演示文稿", 5, { client: "codex" });
+    expect(result.map((r) => r.name)).toEqual(["academic-pptx"]);
+    expect(result[0]?.reasons).toContain("客户端兼容性未声明，请查看指导书");
+    expect(result[0]?.skillId).toBe(unknown.id);
+  });
 });

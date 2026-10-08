@@ -1,13 +1,14 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { hashContent } from "./hash.js";
+import { compareDirectories, snapshotDirectory, type FileDifference } from "./snapshot.js";
+import { replaceSkillDirectory } from "./backups.js";
 import type { SkillRecord } from "./types.js";
 
 export type TargetKind = "agents" | "claude" | "codex";
 
 /** 可写目标目录；插件缓存目录由插件系统版本管理，不作为安装目标 */
-export function targetDirFor(kind: TargetKind, home: string = os.homedir()): string {
+export function targetDirFor(kind: TargetKind, home: string = process.env.SKILLHUB_HOME ?? os.homedir()): string {
   const map: Record<TargetKind, string> = {
     agents: path.join(home, ".agents", "skills"),
     claude: path.join(home, ".claude", "skills"),
@@ -36,7 +37,7 @@ export function resolveSource(records: SkillRecord[], name: string, from?: strin
 
 function hashOfSkillFile(skillPath: string): string | null {
   try {
-    return hashContent(fs.readFileSync(skillPath, "utf8"));
+    return snapshotDirectory(path.dirname(skillPath)).hash;
   } catch {
     return null;
   }
@@ -72,6 +73,9 @@ export interface InstallOptions {
   /** 只算不装 */
   dryRun?: boolean;
   home?: string;
+  backupRoot?: string;
+  expectedSourceHash?: string;
+  expectedTargetHash?: string | null;
 }
 
 export interface InstallResult {
@@ -84,6 +88,16 @@ export interface InstallResult {
   targetPath: string;
   targetHash: string | null;
   filesCopied: number;
+  backupId?: string;
+}
+
+export function previewInstall(records: SkillRecord[], name: string, opts: InstallOptions): { sourceHash: string; targetHash: string | null; sourcePath: string; targetPath: string; differences: FileDifference[] } {
+  const source = resolveSource(records, name, opts.from);
+  if (!source) throw new Error(`找不到 skill：${name}`);
+  const root = typeof opts.to === "string" ? targetDirFor(opts.to, opts.home) : opts.to.dir;
+  const targetPath = path.resolve(root, source.dirName);
+  if (!targetPath.startsWith(path.resolve(root) + path.sep)) throw new Error("目标路径越界");
+  return { sourceHash: snapshotDirectory(source.skillDir).hash, targetHash: fs.existsSync(targetPath) ? snapshotDirectory(targetPath).hash : null, sourcePath: source.skillPath, targetPath, differences: compareDirectories(source.skillDir, targetPath) };
 }
 
 /** 把 skill 复制到目标 agent 目录；目录名沿用来源（agent 按目录扫描发现 skill） */
@@ -100,6 +114,9 @@ export function installSkill(records: SkillRecord[], name: string, opts: Install
   }
   const destSkillMd = path.join(destDir, "SKILL.md");
   const targetHash = fs.existsSync(destSkillMd) ? hashOfSkillFile(destSkillMd) : null;
+  const sourceHash = snapshotDirectory(source.skillDir).hash;
+  if (sourceHash !== (opts.expectedSourceHash ?? source.hash)) throw new Error("来源内容已变化，请重新扫描或预览");
+  if (opts.expectedTargetHash !== undefined && targetHash !== opts.expectedTargetHash) throw new Error("目标在预览后发生变化，请重新预览");
 
   if (targetHash === source.hash) {
     return {
@@ -115,14 +132,15 @@ export function installSkill(records: SkillRecord[], name: string, opts: Install
   }
 
   let filesCopied = 0;
+  let backupId: string | undefined;
   if (!opts.dryRun) {
-    if (targetHash !== null) fs.rmSync(destDir, { recursive: true, force: true });
-    fs.cpSync(source.skillDir, destDir, { recursive: true, filter: skipJunk });
-    filesCopied = countFiles(destDir);
+    const result = replaceSkillDirectory(source.skillDir, destDir, opts.backupRoot ?? path.join(opts.home ?? process.env.SKILLHUB_HOME ?? os.homedir(), ".skillhub", "backups"), targetHash);
+    filesCopied = result.filesCopied;
+    backupId = result.backupId;
   }
   return {
     status: "installed", dryRun: Boolean(opts.dryRun), skill: name, sourceKind: source.source,
-    sourcePath: source.skillPath, sourceHash: source.hash, targetPath: destDir, targetHash, filesCopied,
+    sourcePath: source.skillPath, sourceHash: source.hash, targetPath: destDir, targetHash, filesCopied, backupId,
   };
 }
 
@@ -165,7 +183,7 @@ export function outdatedReport(records: SkillRecord[]): OutdatedEntry[] {
     if (occurrences.length < 2) continue;
     if (new Set(occurrences.map((o) => o.hash)).size === 1) continue;
     const sorted = occurrences
-      .map((rec) => ({ rec, mtimeMs: mtimeOf(rec.skillPath) }))
+      .map((rec) => ({ rec, mtimeMs: rec.modifiedAt ?? mtimeOf(rec.skillPath) }))
       .sort((a, b) => b.mtimeMs - a.mtimeMs);
     const newest = sorted[0];
     if (!newest) continue;

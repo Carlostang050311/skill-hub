@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import { parseSkillSource } from "./parser.js";
 
 describe("parseSkillSource", () => {
+  it("重复解析坏 YAML 始终报错，不让解析前缓存冒充成功", () => {
+    const invalid = "---\nname: broken\ndescription: text: invalid mapping\n---\nbody";
+    for (let attempt = 0; attempt < 3; attempt++) expect(() => parseSkillSource(invalid)).toThrow();
+  });
   it("解析标准 frontmatter 与正文", () => {
     const r = parseSkillSource("---\nname: demo-skill\ndescription: 一个测试\nlicense: MIT\n---\n\n# 正文\n内容");
     expect(r.frontmatter.name).toBe("demo-skill");

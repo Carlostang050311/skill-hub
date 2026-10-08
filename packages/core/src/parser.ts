@@ -9,7 +9,8 @@ export interface ParsedSkill {
 /** 解析 SKILL.md 源文本：统一 CRLF，frontmatter 缺失时返回空对象，正文 trim */
 export function parseSkillSource(raw: string): ParsedSkill {
   const normalized = raw.replace(/\r\n/g, "\n");
-  const parsed = matter(normalized);
+  // gray-matter 会在 YAML 解析前缓存对象；出错后缓存可能冒充成功结果。
+  const parsed = matter(normalized, {});
   return {
     frontmatter: (parsed.data ?? {}) as Record<string, unknown>,
     body: parsed.content.trim(),

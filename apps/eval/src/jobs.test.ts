@@ -81,6 +81,15 @@ describe("buildJobs", () => {
     expect(skipped).toEqual(["demo"]);
     expect(jobs).toHaveLength(0);
   });
+  it("复测绑定指定副本，不能悄悄回到默认 agents", () => {
+    const agents = rec("demo"); agents.skillPath = makeRealSkill("agents original");
+    const claude = rec("demo", "claude"); claude.skillPath = makeRealSkill("claude repaired");
+    const { jobs } = buildJobs([sc], [agents, claude], { demo: claude.id });
+    expect(jobs[0]?.skillId).toBe(claude.id);
+    expect(jobs[0]?.skillHash).toBe(claude.hash);
+    expect(jobs[0]?.messages[0]?.content).toContain("claude repaired");
+    expect(() => buildJobs([sc], [agents], { demo: claude.id })).toThrow(/所选副本/);
+  });
 });
 
 describe("parseModelJson", () => {

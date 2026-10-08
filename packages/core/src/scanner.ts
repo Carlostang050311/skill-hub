@@ -3,12 +3,12 @@ import os from "node:os";
 import path from "node:path";
 import { extractReferences } from "./graph.js";
 import { hashContent } from "./hash.js";
+import { snapshotDirectory } from "./snapshot.js";
 import { parseSkillSource, type ParsedSkill } from "./parser.js";
 import { computeQuality } from "./quality.js";
 import type { RootReport, ScanResult, ScanRoot, SkillRecord } from "./types.js";
 
 const SKIP_DIRS = new Set(["node_modules", ".git", ".svn", "dist", ".next", "coverage", "__pycache__"]);
-const MAX_RESOURCE_FILES = 500;
 const VERSION_RE = /(?:^|\/)(\d+\.\d+\.\d+(?:[-+][\w.-]+)?)(?:\/|$)/;
 /** 提及检测的最短名字长度，避开 qa、ai 这类高频短词 */
 const MENTION_MIN_NAME_LEN = 4;
@@ -34,7 +34,7 @@ function computeMentions(skills: SkillRecord[], bodies: Map<string, string>): vo
 }
 
 /** 本机默认扫描目录（按 agent 划分来源） */
-export function defaultRoots(home: string = os.homedir()): ScanRoot[] {
+export function defaultRoots(home: string = process.env.SKILLHUB_HOME ?? os.homedir()): ScanRoot[] {
   return [
     { source: "agents", path: path.join(home, ".agents", "skills"), sourceKind: "agents-global", maxDepth: 3 },
     { source: "claude", path: path.join(home, ".claude", "skills"), sourceKind: "claude-global", maxDepth: 3 },
@@ -77,32 +77,6 @@ function listSkillFiles(root: string, maxDepth: number): string[] {
   return out;
 }
 
-function listResourceFiles(skillDir: string): string[] {
-  const out: string[] = [];
-  const visit = (dir: string): void => {
-    if (out.length >= MAX_RESOURCE_FILES) return;
-    let entries: fs.Dirent[];
-    try {
-      entries = fs.readdirSync(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const entry of entries) {
-      if (out.length >= MAX_RESOURCE_FILES) return;
-      if (SKIP_DIRS.has(entry.name)) continue;
-      const full = path.join(dir, entry.name);
-      if (entry.isFile()) {
-        if (entry.name === "SKILL.md") continue;
-        out.push(path.relative(skillDir, full).split(path.sep).join("/"));
-      } else if (entry.isDirectory()) {
-        visit(full);
-      }
-    }
-  };
-  visit(skillDir);
-  return out;
-}
-
 function asString(value: unknown): string {
   if (typeof value === "string") return value;
   if (value == null) return "";
@@ -120,7 +94,8 @@ function buildRecord(root: ScanRoot, skillPath: string, raw: string, parsed: Par
   for (const [key, value] of Object.entries(frontmatter)) {
     if (key !== "name" && key !== "description") extraFrontmatter[key] = value;
   }
-  const files = listResourceFiles(skillDir);
+  const snapshot = snapshotDirectory(skillDir);
+  const files = snapshot.files.filter((f) => f.path !== "SKILL.md").map((f) => f.path);
   return {
     id: `${root.source}::${relativeId}`,
     name,
@@ -135,7 +110,9 @@ function buildRecord(root: ScanRoot, skillPath: string, raw: string, parsed: Par
     version: relativeId.match(VERSION_RE)?.[1],
     files,
     bodyChars: body.length,
-    hash: hashContent(raw),
+    hash: snapshot.hash,
+    contentHash: hashContent(raw),
+    modifiedAt: snapshot.modifiedAt,
     quality: computeQuality({ frontmatter, body, dirName, files, skillDir }),
     references: extractReferences(body),
     mentions: [],

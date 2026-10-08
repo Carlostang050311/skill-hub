@@ -1,9 +1,14 @@
 import type { SkillRecord } from "./types.js";
+import { skillUsageCard } from "./catalog.js";
 
 export interface Recommendation {
   name: string;
   score: number;
   reasons: string[];
+  body?: string;
+  source?: string;
+  skillId?: string;
+  hash?: string;
 }
 
 const NAME_HIT = 30;
@@ -14,6 +19,12 @@ const QUALITY_BONUS = 5;
 const QUALITY_PENALTY = 5;
 const PENALTY_CAP = 20;
 const TRUNCATION_PENALTY = 8;
+const SYNONYMS = [["ppt", "pptx", "slides", "幻灯片", "演示文稿"], ["clip", "剪辑", "切片"], ["humanize", "润色", "去ai味", "去 ai 味", "自然表达"], ["test-driven", "test-first", "tdd", "测试驱动"], ["prototype", "原型"], ["screenshot", "截图", "浏览器验收"]];
+const STOP_GRAMS = new Set(["帮我", "这个", "一下", "可以", "需要", "处理", "生成", "使用"]);
+function containsTerm(text: string, term: string): boolean {
+  const lower = text.toLowerCase();
+  return /^[a-z0-9-]+$/.test(term) ? new RegExp(`(^|[^a-z0-9-])${term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^a-z0-9-]|$)`).test(lower) : lower.includes(term);
+}
 
 function extractLatinTerms(task: string): string[] {
   return task
@@ -67,7 +78,14 @@ function scoreSkill(record: SkillRecord, terms: QueryTerms, task: string): Recom
     reasons.push("名称与任务关键词部分吻合");
   }
 
-  const description = record.description.toLowerCase();
+  const card = skillUsageCard(record);
+  const description = [record.description, ...card.aliases, ...card.scenarios].join(" ").toLowerCase();
+  for (const group of SYNONYMS) {
+    if (group.some((term) => containsTerm(task, term)) && group.some((term) => containsTerm(description, term))) {
+      score += 20;
+      reasons.push(`适用场景与同义词：${group[0]}`);
+    }
+  }
   let descHits = 0;
   for (const term of terms.latin) {
     if (term.length >= 3 && description.includes(term)) {
@@ -82,6 +100,7 @@ function scoreSkill(record: SkillRecord, terms: QueryTerms, task: string): Recom
       continue;
     }
     for (const gram of cjkBigrams(run)) {
+      if (STOP_GRAMS.has(gram)) continue;
       if (description.includes(gram)) {
         descHits += 1;
         if (descHits <= 4) reasons.push(`描述命中近义片段：${gram}`);
@@ -107,15 +126,17 @@ function scoreSkill(record: SkillRecord, terms: QueryTerms, task: string): Recom
   }
 
   if (score <= 0 || reasons.length === 0) return null;
-  return { name: record.name, score, reasons };
+  return { name: record.name, score, reasons, source: record.source, skillId: record.id, hash: record.hash };
 }
 
 /** 按任务描述推荐最合适的 skill：名称直击 > 描述关键词命中 > 质量信号修正 */
-export function recommendSkills(records: SkillRecord[], task: string, limit = 5): Recommendation[] {
+export function recommendSkills(records: SkillRecord[], task: string, limit = 5, options: { client?: string } = {}): Recommendation[] {
   if (!task.trim()) return [];
   const terms = extractTerms(task);
   const byName = new Map<string, SkillRecord>();
   for (const record of records) {
+    const clients = skillUsageCard(record).clients;
+    if (options.client && clients.length > 0 && !clients.some((c) => c.toLowerCase() === options.client!.toLowerCase())) continue;
     const existing = byName.get(record.name);
     if (!existing || record.quality.warnings.length < existing.quality.warnings.length) {
       byName.set(record.name, record);
@@ -124,7 +145,10 @@ export function recommendSkills(records: SkillRecord[], task: string, limit = 5)
   const scored: Recommendation[] = [];
   for (const record of byName.values()) {
     const rec = scoreSkill(record, terms, task);
-    if (rec) scored.push(rec);
+    if (rec) {
+      if (options.client) rec.reasons.push(skillUsageCard(record).clients.length ? `声明支持 ${options.client}` : "客户端兼容性未声明，请查看指导书");
+      scored.push(rec);
+    }
   }
   return scored.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name)).slice(0, limit);
 }

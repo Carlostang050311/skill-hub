@@ -4,15 +4,16 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { defaultRoots, scanAll } from "@skillhub/core";
+import { defaultRoots, hashContent, scanAll } from "@skillhub/core";
 import { insertRun, getRunReport, latestRun, listRuns, openDb } from "./db.js";
-import { ensureSandbox, listSandboxFiles, parseExecReport, parseExecSpec, renderExecutorPrompt, renderJudgePrompt, scoreExec, type ExecSpec } from "./exec.js";
+import { ensureSandbox, execBindingStatus, listSandboxFiles, parseExecReport, parseExecSpec, renderExecutorPrompt, renderJudgePrompt, scoreExec, type ExecBinding, type ExecSpec } from "./exec.js";
 import { buildGenChunks, parseGenResults, renderGenPrompt, scenarioToYaml, toGenItems, uncoveredSkills, writeScenarioFile } from "./gen.js";
-import { buildJobs, parseResultsFile } from "./jobs.js";
+import { buildJobs, parseResultsFile, pickPreferred } from "./jobs.js";
 import { collectLeaderboard, type ExecRunRow } from "./leaderboard.js";
 import { loadScenarios } from "./scenario.js";
 import { scoreRun } from "./score.js";
-import type { EvalJob, JobResult, Scenario } from "./types.js";
+import type { EvalJob, Scenario } from "./types.js";
+import { EvalTaskRunner } from "./runner.js";
 
 const VERSION = "0.1.0";
 
@@ -23,7 +24,7 @@ interface GlobalOpts {
 }
 
 function defaultDbPath(): string {
-  return path.join(os.homedir(), ".skillhub", "eval.db");
+  return path.join(process.env.SKILLHUB_HOME ?? os.homedir(), ".skillhub", "eval.db");
 }
 
 function scanRecords(home?: string) {
@@ -45,13 +46,14 @@ export async function main(argv: string[]): Promise<void> {
   const plan = program.command("plan").description("构建评测作业文件（供 ZCode 子代理或 API 后端执行）");
   addGlobal(plan);
   plan
+    .option("--from <source>", "评测指定来源的副本")
     .option("--scenarios <dirs>", "scenario YAML 目录（逗号分隔）", "scenarios,scenarios-auto")
     .option("--out <file>", "作业 JSONL 输出路径", ".skillhub/eval-jobs.jsonl")
     .option("--names <list>", "只评这些 skill（逗号分隔）");
-  plan.action((opts: { scenarios: string; out: string; names?: string; home?: string; json?: boolean }) => {
+  plan.action((opts: { scenarios: string; out: string; names?: string; home?: string; from?: string; json?: boolean }) => {
     const wanted = opts.names ? new Set(opts.names.split(",").map((s) => s.trim()).filter(Boolean)) : null;
     const scenarios = opts.scenarios.split(",").flatMap((d) => loadScenarios(d.trim())).filter((s) => !wanted || wanted.has(s.skill));
-    const { jobs, skipped } = buildJobs(scenarios, scanRecords(opts.home));
+    const { jobs, skipped } = buildJobs(scenarios, scanRecords(opts.home).filter((r) => !opts.from || r.source === opts.from));
     fs.mkdirSync(path.dirname(opts.out), { recursive: true });
     fs.writeFileSync(opts.out, jobs.map((j) => JSON.stringify(j)).join("\n") + "\n", "utf8");
     if (opts.json) {
@@ -65,11 +67,12 @@ export async function main(argv: string[]): Promise<void> {
   const runApi = program.command("run-api").description("用 OpenAI 兼容 API 直接跑批（需 SKILLHUB_API_KEY）");
   addGlobal(runApi);
   runApi
+    .option("--from <source>", "评测指定来源的副本")
     .option("--scenarios <dir>", "scenario YAML 目录", "scenarios")
     .option("--names <list>", "只评这些 skill（逗号分隔）")
     .option("--base-url <url>", "API base URL", process.env.SKILLHUB_BASE_URL ?? "https://api.openai.com/v1")
     .option("--model <id>", "模型 ID", process.env.SKILLHUB_MODEL ?? "gpt-4o-mini");
-  runApi.action(async (opts: { scenarios: string; names?: string; baseUrl: string; model: string; db: string; home?: string }) => {
+  runApi.action(async (opts: { scenarios: string; names?: string; baseUrl: string; model: string; db: string; home?: string; from?: string }) => {
     const key = process.env.SKILLHUB_API_KEY;
     if (!key) {
       console.error("缺少 SKILLHUB_API_KEY 环境变量；或改用 ZCode 子代理后端：plan → 子代理跑批 → ingest");
@@ -77,25 +80,16 @@ export async function main(argv: string[]): Promise<void> {
       return;
     }
     const scenarios = loadScenarios(opts.scenarios).filter((s) => !opts.names || opts.names.split(",").map((s2) => s2.trim()).includes(s.skill));
-    const { jobs } = buildJobs(scenarios, scanRecords(opts.home));
-    const results: JobResult[] = [];
-    for (const job of jobs) {
-      try {
-        const resp = await fetch(`${opts.baseUrl}/chat/completions`, {
-          method: "POST",
-          headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
-          body: JSON.stringify({ model: opts.model, messages: job.messages, temperature: 0 }),
-        });
-        const data = (await resp.json()) as { choices?: Array<{ message?: { content?: string } }> };
-        const raw = data.choices?.[0]?.message?.content ?? "";
-        results.push({ id: job.id, raw });
-      } catch {
-        results.push({ id: job.id, raw: "" });
-      }
-    }
-    const report = scoreRun(scenarios, scanRecords(opts.home), jobs, results, new Date().toISOString(), "api", opts.model);
-    const runId = insertRun(openDb(opts.db), report);
-    console.log(`完成 ${results.length} 个作业，run #${runId} 已入库 → ${opts.db}`);
+    const { jobs } = buildJobs(scenarios, scanRecords(opts.home).filter((r) => !opts.from || r.source === opts.from));
+    let runId: number | undefined;
+    const runner = new EvalTaskRunner(path.join(path.dirname(opts.db), "cli-tasks"), (task) => scoreRun(scenarios, scanRecords(opts.home), task.jobs, task.results, task.createdAt, task.backend, task.model), (report) => {
+      const db = openDb(opts.db);
+      try { runId = insertRun(db, report); } finally { db.close(); }
+    });
+    const task = runner.start({ jobs, backend: "api", model: opts.model, baseUrl: opts.baseUrl, apiKey: key });
+    await runner.wait(task.id);
+    console.log(`${task.status === "completed" ? "完成" : "未完成"} ${task.report?.completedJobs ?? 0}/${jobs.length} 个作业，run #${runId ?? "未入库"} → ${opts.db}`);
+    if (task.status !== "completed") { console.error(task.error); process.exitCode = 1; }
   });
 
   const ingest = program.command("ingest").description("回收作业结果并评分入库（ZCode 子代理后端）");
@@ -162,25 +156,26 @@ export async function main(argv: string[]): Promise<void> {
 
   const exec = program.command("exec").description("执行级评测：skill 真实在沙箱里干活，评审者独立复核");
   const addExecGlobal = (cmd: Command): void => {
-    cmd.option("--scenarios <dir>", "scenario YAML 目录", "scenarios-exec").option("--db <file>", "报告库路径", defaultDbPath()).option("--json", "JSON 输出");
+    cmd.option("--scenarios <dir>", "scenario YAML 目录", "scenarios-exec").option("--home <dir>", "覆盖用户主目录").option("--db <file>", "报告库路径", defaultDbPath()).option("--json", "JSON 输出");
   };
 
   const execPlan = exec.command("plan").description("构建执行作业（每 skill 一个沙箱 + 一条作业）");
   addExecGlobal(execPlan);
   execPlan
+    .option("--from <source>", "评测指定来源的副本")
     .option("--names <list>", "只执行这些 skill（逗号分隔，必须带 execute 块）")
     .option("--sandbox <dir>", "沙箱根目录", ".skillhub/sandbox")
     .option("--out <file>", "作业 JSONL 输出", ".skillhub/exec-jobs.jsonl");
-  execPlan.action((opts: { scenarios: string; names?: string; sandbox: string; out: string; home?: string; json?: boolean }) => {
+  execPlan.action((opts: { scenarios: string; names?: string; sandbox: string; out: string; home?: string; from?: string; json?: boolean }) => {
     const wanted = opts.names ? new Set(opts.names.split(",").map((s) => s.trim())) : null;
     const scenarios = loadScenarios(opts.scenarios).filter((s) => !wanted || wanted.has(s.skill));
-    const records = scanRecords(opts.home);
+    const records = pickPreferred(scanRecords(opts.home).filter((r) => !opts.from || r.source === opts.from));
     const jobs: Array<Record<string, unknown>> = [];
     const skipped: string[] = [];
     for (const scenario of scenarios) {
       const spec = parseExecSpec(scenario);
       if (!spec) continue;
-      const record = records.filter((r) => r.name === scenario.skill).sort((a, b) => (a.source === "agents" ? -1 : 0) - (b.source === "agents" ? -1 : 0))[0];
+      const record = records.get(scenario.skill);
       if (!record) {
         skipped.push(scenario.skill);
         continue;
@@ -190,6 +185,9 @@ export async function main(argv: string[]): Promise<void> {
         id: `exec:${scenario.skill}`,
         type: "execute",
         skill: scenario.skill,
+        skillId: record.id,
+        skillHash: record.hash,
+        scenarioHash: hashContent(JSON.stringify(scenario)),
         messages: [{ role: "user", content: renderExecutorPrompt({ skillPath: record.skillPath, sandboxDir, spec }) }],
         sandboxDir,
         spec,
@@ -245,17 +243,21 @@ export async function main(argv: string[]): Promise<void> {
     .option("--jobs <file>", "执行作业 JSONL", ".skillhub/exec-jobs.jsonl")
     .option("--judge-results <file>", "评审结果 JSONL", ".skillhub/exec-judge-results.jsonl")
     .option("--model <id>", "模型标注", "glm-5.3-flash");
-  execIngest.action((opts: { jobs: string; judgeResults: string; model: string; json?: boolean }) => {
+  execIngest.action((opts: { jobs: string; judgeResults: string; model: string; scenarios: string; home?: string; json?: boolean }) => {
     const jobs = fs
       .readFileSync(opts.jobs, "utf8")
       .split("\n")
       .filter((l) => l.trim())
-      .map((l) => JSON.parse(l) as { id: string; skill: string; spec: ExecSpec });
+      .map((l) => JSON.parse(l) as ExecBinding & { id: string; skill: string; spec: ExecSpec; sandboxDir?: string });
     const judgeResults = parseResultsFile(fs.readFileSync(opts.judgeResults, "utf8"));
     const judgeMap = new Map(judgeResults.map((r) => [r.id, r.raw]));
+    const records = scanRecords(opts.home);
+    const scenarios = loadScenarios(opts.scenarios);
     const rows = jobs.map((job) => {
-      const result = scoreExec(job.spec, judgeMap.get(`exec-judge:${job.skill}`) ?? "");
-      return { skill: job.skill, ...result };
+      const result = scoreExec(job.spec, judgeMap.get(`exec-judge:${job.skill}`) ?? "", job.sandboxDir);
+      const scenario = scenarios.find((s) => s.skill === job.skill);
+      const status = execBindingStatus(job, records, scenario ? hashContent(JSON.stringify(scenario)) : "missing-scenario");
+      return { skill: job.skill, skillId: job.skillId, skillHash: job.skillHash, scenarioHash: job.scenarioHash, status, ...result, accepted: status === "bound" && result.accepted };
     });
     const runRecord = { runAt: new Date().toISOString(), backend: "zcode-exec", model: opts.model, results: rows };
     const historyFile = path.join(path.dirname(opts.jobs), "exec-runs.json");

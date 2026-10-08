@@ -3,6 +3,7 @@ import path from "node:path";
 import type { SkillRecord } from "@skillhub/core";
 import type { Scenario } from "./types.js";
 import { parseModelJson } from "./jobs.js";
+import { inspectArtifacts, parseArtifactChecks, validateArtifacts, type ArtifactCheck, type ArtifactCheckResult } from "./artifacts.js";
 
 // ---------- scenario 的 execute 块 ----------
 
@@ -10,6 +11,14 @@ export interface ExecSpec {
   task: string;
   artifacts: string[];
   rubric: string[];
+  checks?: ArtifactCheck[];
+}
+
+export interface ExecBinding { skillId?: string; skillHash?: string; scenarioHash?: string }
+export function execBindingStatus(binding: ExecBinding, records: SkillRecord[], scenarioHash?: string): "bound" | "stale" | "unverified" {
+  if (!binding.skillId || !binding.skillHash || !binding.scenarioHash) return "unverified";
+  const current = records.find((r) => r.id === binding.skillId);
+  return !current || current.hash !== binding.skillHash || (scenarioHash !== undefined && binding.scenarioHash !== scenarioHash) ? "stale" : "bound";
 }
 
 export function parseExecSpec(scenario: Scenario): ExecSpec | null {
@@ -23,7 +32,8 @@ export function parseExecSpec(scenario: Scenario): ExecSpec | null {
   if (!task || rubric.length === 0) {
     throw new Error(`scenario ${scenario.skill}: execute 块需要 task 和 rubric`);
   }
-  return { task, artifacts: strList(map.artifacts), rubric };
+  if (new Set(rubric.map(normalizeItem)).size !== rubric.length) throw new Error("rubric 不得包含重复项");
+  return { task, artifacts: strList(map.artifacts), rubric, checks: parseArtifactChecks(map.checks) };
 }
 
 // ---------- 执行阶段 ----------
@@ -35,6 +45,7 @@ export function renderExecutorPrompt(input: { skillPath: string; sandboxDir: str
     `1. 先用工具阅读 skill 文件：${input.skillPath}——这是本任务的作业指导书，严格按它执行。`,
     `2. 工作目录（沙箱）：${input.sandboxDir}——所有产出文件只写在里面。`,
     `3. 任务：${input.spec.task}`,
+    `4. 预期产物：${input.spec.artifacts.join(", ") || "按任务要求"}。工作目录仅是输出约束，不提供操作系统隔离。`,
     "",
     "完成后自查以下核查单（如实逐条判断，并给出一句话证据）：",
     ...input.spec.rubric.map((item, i) => `   ${i + 1}. ${item}`),
@@ -60,7 +71,7 @@ export function parseExecReport(skill: string, sandboxDir: string, raw: string):
   if (!parsed) return { skill, sandboxDir, artifacts: [], summary: "", rubric: [], raw, parseError: "无法解析 JSON" };
   const rubric = Array.isArray(parsed.rubric)
     ? (parsed.rubric as Array<Record<string, unknown>>)
-        .filter((r) => typeof r.item === "string")
+        .filter((r) => r != null && typeof r === "object" && typeof r.item === "string")
         .map((r) => ({
           item: String(r.item),
           pass: r.pass === true,
@@ -89,6 +100,10 @@ export function renderJudgePrompt(input: { skill: string; spec: ExecSpec; report
     `自报产物：${input.report.artifacts.join(", ") || "（无）"}`,
     `沙箱目录实际文件清单：`,
     input.fileListing || "（空）",
+    "真实产物证据（内容截取明确标记；二进制只展示大小和指纹；不要把截取内容当成全文）：",
+    JSON.stringify(inspectArtifacts(input.report.sandboxDir, [...input.spec.artifacts, ...input.report.artifacts]), null, 2),
+    "程序验收结果（任一失败均不得判整体通过）：",
+    JSON.stringify(validateArtifacts(input.report.sandboxDir, input.spec.artifacts, input.spec.checks), null, 2),
     "",
     "核查单（逐条独立判断 pass/fail，并给一句话依据；执行者自评仅供参考，不要照抄）：",
     ...input.spec.rubric.map((item, i) => `   ${i + 1}. ${item}`),
@@ -127,6 +142,8 @@ export interface ExecJudgeResult {
   issues: string[];
   comment: string;
   parseError?: string;
+  checks?: ArtifactCheckResult[];
+  accepted?: boolean;
 }
 
 /** 宽松匹配键：小写、去掉所有非字母数字汉字字符，容忍评审复述措辞差异 */
@@ -155,7 +172,10 @@ function indexByNormalized(rubric: Array<{ item: string; pass: boolean; evidence
   const map = new Map<string, { pass: boolean; evidence: string }>();
   for (const r of rubric) {
     const key = normalizeItem(r.item);
-    if (key && !map.has(key)) map.set(key, { pass: r.pass, evidence: r.evidence ?? "" });
+    if (key) {
+      const existing = map.get(key);
+      map.set(key, { pass: r.pass && (existing?.pass ?? true), evidence: r.evidence ?? existing?.evidence ?? "" });
+    }
   }
   return map;
 }
@@ -169,7 +189,7 @@ export function judgeAgreement(spec: ExecSpec, judgeARaw: string, judgeBRaw: str
     const parsed = parseModelJson(raw);
     if (!parsed || !Array.isArray(parsed.rubric)) return null;
     return (parsed.rubric as Array<Record<string, unknown>>)
-      .filter((r) => typeof r.item === "string")
+      .filter((r) => r != null && typeof r === "object" && typeof r.item === "string")
       .map((r) => ({ item: String(r.item), pass: r.pass === true, evidence: typeof r.evidence === "string" ? r.evidence : "" }));
   };
   const rubricA = parse(judgeARaw);
@@ -222,22 +242,28 @@ export function judgeAgreement(spec: ExecSpec, judgeARaw: string, judgeBRaw: str
     issues,
   };
 }
-export function scoreExec(spec: ExecSpec, judgeRaw: string): ExecJudgeResult {
+export function scoreExec(spec: ExecSpec, judgeRaw: string, sandboxDir?: string): ExecJudgeResult {
   const parsed = parseModelJson(judgeRaw);
   if (!parsed || !Array.isArray(parsed.rubric)) {
     return { rubricTotal: spec.rubric.length, rubricPassed: 0, score: 0, issues: [], comment: "", parseError: "评审 JSON 无法解析" };
   }
-  const judged = parsed.rubric as Array<Record<string, unknown>>;
-  const passed = judged.filter((r) => r.pass === true).length;
-  const issues = judged
-    .filter((r) => r.pass !== true && typeof r.evidence === "string" && r.evidence.trim())
-    .map((r) => `${String(r.item).slice(0, 40)}：${String(r.evidence).slice(0, 80)}`);
+  const judged = (parsed.rubric as Array<unknown>).filter((r): r is Record<string, unknown> => r != null && typeof r === "object");
+  const byItem = indexByNormalized(judged.filter((r) => typeof r.item === "string").map((r) => ({ item: String(r.item), pass: r.pass === true, evidence: typeof r.evidence === "string" ? r.evidence : "" })));
+  const passed = spec.rubric.filter((item) => byItem.get(normalizeItem(item))?.pass).length;
+  const issues = spec.rubric.filter((item) => !byItem.get(normalizeItem(item))?.pass).map((item) => `${item}：${byItem.get(normalizeItem(item))?.evidence || "评审未覆盖或未通过"}`);
+  const checks = sandboxDir ? validateArtifacts(sandboxDir, spec.artifacts, spec.checks) : undefined;
+  const failedChecks = checks?.filter((c) => !c.pass) ?? [];
+  issues.push(...failedChecks.map((c) => `${c.file}（${c.type}）：${c.evidence}`));
+  const unverified = !sandboxDir && (spec.artifacts.length > 0 || (spec.checks?.length ?? 0) > 0);
+  if (unverified) issues.push("缺少真实工作目录，产物未验收");
   return {
     rubricTotal: spec.rubric.length,
     rubricPassed: passed,
-    score: Math.round((passed / spec.rubric.length) * 100),
+    score: failedChecks.length || unverified ? 0 : spec.rubric.length ? Math.round((passed / spec.rubric.length) * 100) : 0,
     issues,
     comment: typeof parsed.overall_comment === "string" ? parsed.overall_comment : "",
+    checks,
+    accepted: !unverified && failedChecks.length === 0 && passed === spec.rubric.length && spec.rubric.length > 0,
   };
 }
 

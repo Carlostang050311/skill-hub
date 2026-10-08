@@ -10,8 +10,10 @@ export interface LeaderboardSkill {
   staticScore: number;
   /** 最新一次评测的 run id */
   lastRunId: number;
+  status?: "complete" | "incomplete" | "stale" | "unverified";
+  skillHash?: string;
   /** 执行级评测（最新一次） */
-  exec: { score: number; passed: number; total: number; runAt: string } | null;
+  exec: { score: number; passed: number; total: number; runAt: string; verified?: boolean; skillId?: string; skillHash?: string; scenarioHash?: string; status?: string } | null;
 }
 
 export interface LeaderboardData {
@@ -23,13 +25,15 @@ export interface LeaderboardData {
 
 export interface ExecRunRow {
   runAt: string;
-  results: Array<{ skill: string; score: number; rubricPassed: number; rubricTotal: number }>;
+  results: Array<{ skill: string; score: number; rubricPassed: number; rubricTotal: number; checks?: unknown[]; skillId?: string; skillHash?: string; scenarioHash?: string; status?: string }>;
 }
+
+interface LeaderboardReportRow { skill: string; overall: number | null; triggerScore: number | null; clarityScore: number | null; staticScore: number; skillHash?: string; status?: "complete" | "incomplete" | "stale" }
 
 /** 从评测库与执行级 run 汇总出榜单数据：每个 skill 取最新一次的分数 */
 export function buildLeaderboardData(
   runs: RunSummaryRow[],
-  fetchRunResults: (runId: number) => Array<{ skill: string; overall: number | null; triggerScore: number | null; clarityScore: number | null; staticScore: number }>,
+  fetchRunResults: (runId: number) => LeaderboardReportRow[],
   execRuns: ExecRunRow[],
   generatedAt: string,
 ): LeaderboardData {
@@ -43,6 +47,8 @@ export function buildLeaderboardData(
         clarity: r.clarityScore,
         staticScore: r.staticScore,
         lastRunId: run.id,
+        status: r.skillHash && r.status ? r.status : "unverified",
+        skillHash: r.skillHash,
         exec: bySkill.get(r.skill)?.exec ?? null,
       });
     }
@@ -50,7 +56,7 @@ export function buildLeaderboardData(
   for (const execRun of execRuns) {
     for (const r of execRun.results ?? []) {
       const existing = bySkill.get(r.skill);
-      const exec = { score: r.score, passed: r.rubricPassed, total: r.rubricTotal, runAt: execRun.runAt };
+      const exec = { score: r.score, passed: r.rubricPassed, total: r.rubricTotal, runAt: execRun.runAt, verified: r.status === "bound" && Boolean(r.skillId && r.skillHash && r.scenarioHash) && Array.isArray(r.checks), skillId: r.skillId, skillHash: r.skillHash, scenarioHash: r.scenarioHash, status: r.status ?? "unverified" };
       if (existing) existing.exec = exec;
       else {
         bySkill.set(r.skill, {
@@ -60,6 +66,7 @@ export function buildLeaderboardData(
           clarity: null,
           staticScore: 0,
           lastRunId: 0,
+          status: "unverified",
           exec,
         });
       }
@@ -91,10 +98,10 @@ export function collectLeaderboard(db: DatabaseSync, execRuns: ExecRunRow[], gen
     avgStatic: Number(r.avg_static),
     avgOverall: r.avg_overall == null ? null : Number(r.avg_overall),
   }));
-  const resultsById = new Map<number, Array<{ skill: string; overall: number | null; triggerScore: number | null; clarityScore: number | null; staticScore: number }>>();
+  const resultsById = new Map<number, LeaderboardReportRow[]>();
   for (const r of rows) {
     try {
-      const report = JSON.parse(String(r.raw_json)) as { results?: Array<{ skill: string; overall: number | null; triggerScore: number | null; clarityScore: number | null; staticScore: number }> };
+      const report = JSON.parse(String(r.raw_json)) as { results?: LeaderboardReportRow[] };
       resultsById.set(Number(r.id), report.results ?? []);
     } catch {
       resultsById.set(Number(r.id), []);

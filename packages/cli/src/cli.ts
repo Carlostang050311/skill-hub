@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from "commander";
+import { registerWorkbenchCommands } from "./workbench-commands.js";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
@@ -14,6 +15,7 @@ import {
   isTargetKind,
   loadOrigins,
   outdatedReport,
+  detectCollisions,
   packSkill,
   parseSkillSource,
   recommendSkills,
@@ -98,6 +100,7 @@ function printJson(data: unknown): void {
 export async function main(argv: string[]): Promise<void> {
   const program = new Command();
   program.name("skillhub").description("本地 Agent Skill 库管理与评测平台").version(VERSION);
+  registerWorkbenchCommands(program);
 
   const scan = program.command("scan").description("扫描全部配置目录并输出摘要");
   addGlobal(scan);
@@ -508,10 +511,23 @@ export async function main(argv: string[]): Promise<void> {
   });
 
   const recommend = program.command("recommend <task...>").description("按任务描述推荐最合适的 skill（供人或 agent 查库）");
-  recommend.option("--limit <n>", "返回条数", "5").option("--home <dir>", "覆盖用户主目录").option("--json", "JSON 输出");
-  recommend.action((task: string[], opts: { limit: string; home?: string; json?: boolean }) => {
+  recommend.option("--limit <n>", "返回条数", "5").option("--client <name>", "按声明的客户端兼容性筛选").option("--with-body", "附带命中的 SKILL.md 正文（供 hook 预取）").option("--home <dir>", "覆盖用户主目录").option("--json", "JSON 输出");
+  recommend.action((task: string[], opts: { limit: string; client?: string; withBody?: boolean; home?: string; json?: boolean }) => {
     const records = scanAll(defaultRoots(opts.home)).skills;
-    const recs = recommendSkills(records, task.join(" "), Number(opts.limit) || 5);
+    const recs = recommendSkills(records, task.join(" "), Number(opts.limit) || 5, { client: opts.client });
+    if (opts.withBody && recs.length > 0) {
+      const byName = new Map(records.map((r) => [r.name, r]));
+      for (const r of recs) {
+        const record = records.find((record) => record.id === r.skillId) ?? byName.get(r.name);
+        if (record) {
+          try {
+            r.body = parseSkillSource(fs.readFileSync(record.skillPath, "utf8")).body;
+          } catch {
+            r.body = "";
+          }
+        }
+      }
+    }
     if (opts.json) {
       printJson(recs);
       return;
@@ -524,6 +540,25 @@ export async function main(argv: string[]): Promise<void> {
       console.log(`${i + 1}. ${r.name}  匹配分 ${r.score}`);
       for (const reason of r.reasons) console.log(`   - ${reason}`);
     }
+  });
+
+  const collisionsCmd = program.command("collisions").description("触发域重叠检测：哪些 skill 在抢同一批任务");
+  collisionsCmd.option("--min <jaccard>", "描述相似度阈值 0-1", "0.35").option("--home <dir>", "覆盖用户主目录").option("--json", "JSON 输出");
+  collisionsCmd.action((opts: { min: string; home?: string; json?: boolean }) => {
+    const pairs = detectCollisions(scanAll(defaultRoots(opts.home)).skills, Number(opts.min) || 0.35);
+    if (opts.json) {
+      printJson(pairs);
+      return;
+    }
+    if (pairs.length === 0) {
+      console.log("没有触发域重叠对");
+      return;
+    }
+    for (const p of pairs) {
+      console.log(`${p.a} × ${p.b}  相似度 ${p.jaccard}`);
+      console.log(`  共享词：${p.sharedTerms.join(" / ")}`);
+    }
+    console.log(`共 ${pairs.length} 对——高位对建议合并，或在各自 description 里写清"不适用"边界。`);
   });
 
   const searchRemote = program.command("search-remote <keyword...>").description("在 skills.sh 全生态搜索 skill");

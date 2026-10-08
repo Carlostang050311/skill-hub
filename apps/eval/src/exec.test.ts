@@ -3,8 +3,20 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import type { SkillRecord } from "@skillhub/core";
-import { ensureSandbox, parseExecReport, parseExecSpec, renderExecutorPrompt, renderJudgePrompt, scoreExec, type ExecSpec } from "./exec.js";
+import { ensureSandbox, execBindingStatus, parseExecReport, parseExecSpec, renderExecutorPrompt, renderJudgePrompt, scoreExec, type ExecSpec } from "./exec.js";
 import { loadScenarios } from "./scenario.js";
+
+describe("执行成绩版本绑定", () => {
+  it("历史未绑定、技能改动和用例改动都不能冒充当前有效成绩", () => {
+    const record = rec("demo", "/demo");
+    const binding = { skillId: record.id, skillHash: record.hash, scenarioHash: "cases" };
+    expect(execBindingStatus({}, [record])).toBe("unverified");
+    expect(execBindingStatus(binding, [record], "cases")).toBe("bound");
+    expect(execBindingStatus(binding, [{ ...record, hash: "changed" }])).toBe("stale");
+    expect(execBindingStatus(binding, [record], "changed")).toBe("stale");
+    expect(execBindingStatus(binding, [])).toBe("stale");
+  });
+});
 
 function rec(name: string, dir: string): SkillRecord {
   return {

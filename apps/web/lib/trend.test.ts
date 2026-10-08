@@ -42,7 +42,7 @@ describe("skillDeltas", () => {
       { runId: 9, skill: "flat", overall: 95 },
       { runId: 6, skill: "flat", overall: 95 },
       { runId: 9, skill: "only-once", overall: 80 },
-    ]);
+    ].map((e) => ({ ...e, skillId: `agents::${e.skill}`, skillHash: `hash-${e.runId}`, scenarioHash: "scenario", source: "agents", model: "same", backend: "api" })).filter((e) => e.skill !== "flat"));
     expect(deltas.map((d) => d.name)).toEqual(["a", "b"]);
     expect(deltas[0]?.delta).toBe(8);
     expect(deltas[0]?.first.runId).toBe(1);
@@ -52,5 +52,10 @@ describe("skillDeltas", () => {
 
   it("无重复 skill 时返回空", () => {
     expect(skillDeltas([{ runId: 1, skill: "x", overall: 80 }])).toEqual([]);
+  });
+  it("不同模型、用例、副本或未绑定历史分不构成修复对比", () => {
+    const original = { runId: 1, skill: "x", overall: 80, skillId: "agents::x", skillHash: "old", scenarioHash: "cases", source: "agents", model: "model", backend: "api" };
+    for (const changed of [{ model: "other" }, { scenarioHash: "other" }, { skillId: "claude::x", source: "claude" }, { backend: "zcode" }, { skillHash: undefined }]) expect(skillDeltas([original, { ...original, runId: 2, overall: 99, skillHash: "new", ...changed }])).toEqual([]);
+    expect(skillDeltas([original, { ...original, runId: 2, skillHash: "new", overall: 85 }])[0]?.latest.skillHash).toBe("new");
   });
 });

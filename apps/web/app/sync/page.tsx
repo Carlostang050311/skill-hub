@@ -2,6 +2,7 @@ import Link from "next/link";
 import { findConflicts, isTargetKind, outdatedReport } from "@skillhub/core";
 import { Badge, Card, Mono, SectionTitle, Stat } from "@/components/ui";
 import { InstallButton } from "@/components/InstallButton";
+import { BackupPanel } from "@/components/BackupPanel";
 import { getScan } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -55,7 +56,7 @@ export default function SyncPage() {
                       const isLagging = entry?.lagging.some((l) => l.source === o.source) ?? false;
                       const writable = isTargetKind(o.source);
                       return (
-                        <span key={o.id} className="inline-flex items-center gap-1.5">
+                        <div key={o.id} className="flex min-w-0 flex-col gap-1.5">
                           <Badge tone={isNewest ? "emerald" : "slate"}>
                             {o.source}
                             {isNewest ? " · 最新" : ""}
@@ -64,7 +65,7 @@ export default function SyncPage() {
                             <InstallButton name={g.name} to={o.source} from={entry?.newest.source} force label="对齐最新" tone="violet" />
                           ) : null}
                           {isLagging && !writable ? <span className="text-[10px] text-slate-600">随插件更新</span> : null}
-                        </span>
+                        </div>
                       );
                     })}
                   </div>
@@ -96,10 +97,11 @@ export default function SyncPage() {
         <SectionTitle>说明</SectionTitle>
         <ul className="list-inside list-disc space-y-1 text-xs text-slate-400">
           <li>「一致」表示同名 skill 在多个目录内容完全相同（指纹相同），通常是有意多端部署。</li>
-          <li>「漂移」表示同名但内容不同——按文件修改时间标出「最新」副本，「对齐最新」会把最新内容覆盖到落后副本。</li>
+          <li>「漂移」包含正文与全部资源的变化；按目录内文件修改时间建议来源，时间新不保证内容正确，请核对差异。</li>
           <li>插件缓存目录由插件系统版本管理，只作来源不作安装目标。</li>
         </ul>
       </Card>
+      <Card><SectionTitle>同步与修复备份</SectionTitle><BackupPanel /></Card>
     </div>
   );
 }

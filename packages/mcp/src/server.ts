@@ -27,10 +27,11 @@ export function createServer(): McpServer {
       inputSchema: {
         task: z.string().describe("用户的任务描述，保留原话里的领域关键词，中英文皆可"),
         limit: z.number().int().min(1).max(20).optional().describe("返回条数，默认 5"),
+        client: z.string().optional().describe("可选客户端名称；排除声明不兼容的 skill，未知兼容性会明确标记"),
       },
     },
-    async ({ task, limit }) => {
-      const recs = recommendSkills(getRecords(), task, limit ?? 5);
+    async ({ task, limit, client }) => {
+      const recs = recommendSkills(getRecords(), task, limit ?? 5, { client });
       return { content: [{ type: "text", text: JSON.stringify(recs, null, 2) }] };
     },
   );

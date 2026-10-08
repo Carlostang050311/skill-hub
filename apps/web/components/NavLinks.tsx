@@ -9,19 +9,21 @@ const ITEMS = [
   { href: "/graph", label: "依赖图谱" },
   { href: "/sync", label: "同步状态" },
   { href: "/eval", label: "评测体检" },
+  { href: "/workbench", label: "评测操作台" },
+  { href: "/kits", label: "场景与案例" },
 ];
 
 export function NavLinks() {
   const pathname = usePathname();
   return (
-    <nav className="flex flex-col gap-1">
+    <nav className="flex gap-1 overflow-x-auto md:flex-col">
       {ITEMS.map((item) => {
         const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
         return (
           <Link
             key={item.href}
             href={item.href}
-            className={`rounded-lg px-3 py-2 text-sm transition-colors ${
+            className={`whitespace-nowrap rounded-lg px-3 py-2 text-sm transition-colors ${
               active
                 ? "bg-violet-500/15 text-violet-300"
                 : "text-slate-400 hover:bg-slate-800/60 hover:text-slate-200"

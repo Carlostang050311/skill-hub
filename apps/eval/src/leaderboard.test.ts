@@ -44,9 +44,11 @@ describe("buildLeaderboardData", () => {
     expect(a?.overall).toBe(86);
     expect(a?.lastRunId).toBe(4);
     expect(a?.exec).toBeNull();
+    expect(a?.status).toBe("unverified");
     const b = data.skills.find((s) => s.name === "b");
     expect(b?.overall).toBe(90);
     expect(b?.exec?.score).toBe(100);
+    expect(b?.exec?.verified).toBe(false);
   });
 
   it("只有执行级成绩的 skill 也会上榜", () => {

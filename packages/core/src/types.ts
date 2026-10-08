@@ -45,8 +45,11 @@ export interface SkillRecord {
   /** skill 目录下附属资源文件（相对路径，正斜杠，不含 SKILL.md） */
   files: string[];
   bodyChars: number;
-  /** 归一化内容（LF、去行尾空白）的 sha256 前 16 位 */
+  /** 正文及全部资源组成的目录指纹（sha256 前 16 位） */
   hash: string;
+  /** 单独的 SKILL.md 内容指纹，供兼容旧报告和正文比较 */
+  contentHash?: string;
+  modifiedAt?: number;
   quality: QualitySignals;
   /** 正文引用的其他 skill 名（`xxx/SKILL.md` 链接与 `[[xxx]]`，未过滤） */
   references: string[];

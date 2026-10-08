@@ -29,33 +29,39 @@ export function buildTrend(runs: RunSummaryRow[]): TrendPoint[] {
 export interface SkillDeltaEntry {
   runId: number;
   overall: number;
+  skillHash: string;
 }
 
 export interface SkillDelta {
   name: string;
+  source: string;
+  model: string;
+  key: string;
   first: SkillDeltaEntry;
   latest: SkillDeltaEntry;
   delta: number;
 }
 
-/** 同名 skill 跨 run 的 overall 变化（首末对比，0 变化不列） */
-export function skillDeltas(entries: Array<{ runId: number; skill: string; overall: number }>): SkillDelta[] {
-  const bySkill = new Map<string, SkillDeltaEntry[]>();
+/** 相同副本、用例、模型和后端才能比较版本；未绑定的历史结果不参与。 */
+export function skillDeltas(entries: Array<{ runId: number; skill: string; overall: number; skillId?: string; skillHash?: string; scenarioHash?: string; source?: string; model?: string | null; backend?: string }>): SkillDelta[] {
+  const bySkill = new Map<string, typeof entries>();
   for (const e of entries) {
-    const list = bySkill.get(e.skill) ?? [];
-    list.push({ runId: e.runId, overall: e.overall });
-    bySkill.set(e.skill, list);
+    if (!e.skillId || !e.skillHash || !e.scenarioHash || !e.source || !e.model || !e.backend) continue;
+    const key = JSON.stringify([e.skill, e.skillId, e.scenarioHash, e.source, e.model, e.backend]);
+    const list = bySkill.get(key) ?? [];
+    list.push(e);
+    bySkill.set(key, list);
   }
   const out: SkillDelta[] = [];
-  for (const [name, list] of bySkill) {
+  for (const [key, list] of bySkill) {
     if (list.length < 2) continue;
     const sorted = [...list].sort((a, b) => a.runId - b.runId);
     const first = sorted[0];
     const latest = sorted[sorted.length - 1];
     if (!first || !latest) continue;
     const delta = latest.overall - first.overall;
-    if (delta === 0) continue;
-    out.push({ name, first, latest, delta });
+    if (first.skillHash === latest.skillHash) continue;
+    out.push({ name: first.skill, source: first.source!, model: first.model!, key, first: { runId: first.runId, overall: first.overall, skillHash: first.skillHash! }, latest: { runId: latest.runId, overall: latest.overall, skillHash: latest.skillHash! }, delta });
   }
   return out.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
 }

@@ -17,12 +17,21 @@ export interface EvalJob {
   messages: Array<{ role: "user"; content: string }>;
   /** type=trigger 时的期望答案 */
   expectTrigger?: boolean;
+  skillHash?: string;
+  skillId?: string;
+  skillPath?: string;
+  /** 清晰度作业保存用例快照，以便用例消失后仍能报告原计划。 */
+  scenario?: Scenario;
+  scenarioHash?: string;
 }
 
 export interface JobResult {
   id: string;
   /** 模型原始输出 */
   raw: string;
+  error?: string;
+  latencyMs?: number;
+  tokens?: number;
 }
 
 export interface SkillEvalReport {
@@ -44,6 +53,13 @@ export interface SkillEvalReport {
   overall: number | null;
   /** 结果解析失败的作业数 */
   errors: number;
+  skillHash?: string;
+  skillId?: string;
+  scenarioHash?: string;
+  expectedJobs?: number;
+  completedJobs?: number;
+  completionRate?: number;
+  status?: "complete" | "incomplete" | "stale";
 }
 
 export interface RunReport {
@@ -55,4 +71,8 @@ export interface RunReport {
   avgClarity: number | null;
   avgStatic: number;
   avgOverall: number | null;
+  expectedJobs?: number;
+  completedJobs?: number;
+  completionRate?: number;
+  errors?: number;
 }

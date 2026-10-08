@@ -2,9 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { isTargetKind, parseSkillFile } from "@skillhub/core";
+import { isTargetKind, parseSkillFile, resolveSource, skillUsageCard } from "@skillhub/core";
 import { Badge, Card, Mono, SectionTitle } from "@/components/ui";
 import { InstallButton } from "@/components/InstallButton";
+import { RepairPanel } from "@/components/RepairPanel";
 import { getScan } from "@/lib/data";
 import { reverseMentions, reverseReferences } from "@/lib/graph";
 
@@ -16,6 +17,8 @@ export default async function SkillDetailPage({ params }: { params: Promise<{ na
   const hits = scan.skills.filter((s) => s.name === name).sort((a, b) => a.source.localeCompare(b.source));
   if (hits.length === 0) notFound();
   const allIdentical = hits.every((h) => h.hash === hits[0]?.hash);
+  const card = skillUsageCard(resolveSource(scan.skills, name)!);
+  const writable = hits.filter((h) => isTargetKind(h.source));
 
   const inbound = reverseReferences(scan.skills, name);
   const inboundMentions = reverseMentions(scan.skills, name);
@@ -42,6 +45,8 @@ export default async function SkillDetailPage({ params }: { params: Promise<{ na
         </p>
       </header>
 
+      <Card><SectionTitle>技能使用卡片</SectionTitle><p className="mb-3 text-xs text-slate-500">使用提示供选型参考，实际能力以当前指导书为准；未声明的环境或兼容性保持未知。</p><div className="grid gap-3 text-xs md:grid-cols-2">{[["适用场景", card.scenarios], ["支持客户端", card.clients], ["输入", card.inputs], ["输出", card.outputs], ["环境要求", card.requirements], ["使用示例", card.examples], ["常见失败", card.failures]].map(([label, values]) => <div key={String(label)}><p className="mb-1 text-slate-500">{String(label)}</p><p className="text-slate-300">{(values as string[]).join("；") || "未声明，请查看指导书"}</p></div>)}</div></Card>
+      {writable.length ? <Card><SectionTitle>修复与复测</SectionTitle><RepairPanel name={name} copies={writable.map((h) => ({ id: h.id, source: h.source }))} /></Card> : null}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <SectionTitle>引用与提及</SectionTitle>          {outbound.length === 0 && outboundMentions.length === 0 ? (

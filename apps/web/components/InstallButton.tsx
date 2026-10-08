@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import type { FileDifference } from "@skillhub/core";
+import { FileDiff } from "./FileDiff";
+import { apiJson } from "@/lib/client-api";
 
 interface InstallResponse {
   status: "installed" | "identical" | "conflict";
@@ -8,13 +11,13 @@ interface InstallResponse {
   targetPath: string;
   filesCopied: number;
   error?: string;
+  backupId?: string;
 }
 
 export function InstallButton({
   name,
   to,
   from,
-  force = false,
   label,
   tone = "slate",
 }: {
@@ -27,17 +30,19 @@ export function InstallButton({
 }) {
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [preview, setPreview] = useState<{ sourceHash: string; targetHash: string | null; differences: FileDifference[] } | null>(null);
 
   async function go(): Promise<void> {
     setBusy(true);
     setMsg(null);
     try {
-      const res = await fetch("/api/install", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name, to, from, force }),
-      });
-      const data = (await res.json()) as InstallResponse;
+      if (!preview) {
+        const data = await apiJson<{ sourceHash: string; targetHash: string | null; differences: FileDifference[] }>("/api/install", { action: "preview", name, to, from });
+        if (!data.differences.length) { setMsg("完整目录内容一致"); return; }
+        setPreview(data);
+        return;
+      }
+      const data = await apiJson<InstallResponse>("/api/install", { name, to, from, force: preview.targetHash !== null, expectedSourceHash: preview.sourceHash, expectedTargetHash: preview.targetHash });
       if (data.error) {
         setMsg(`失败：${data.error}`);
       } else if (data.status === "identical") {
@@ -45,7 +50,7 @@ export function InstallButton({
       } else if (data.status === "conflict") {
         setMsg("目标已有不同内容，需覆盖安装");
       } else {
-        setMsg(`已安装 ${data.filesCopied} 个文件，页面即将刷新…`);
+        setMsg(`已安装 ${data.filesCopied} 个文件${data.backupId ? "，原件已备份" : ""}，页面即将刷新…`);
         setTimeout(() => window.location.reload(), 900);
       }
     } catch (err) {
@@ -61,16 +66,17 @@ export function InstallButton({
       : "border-slate-700 bg-slate-900 text-slate-300 hover:border-violet-500/40 hover:text-violet-300";
 
   return (
-    <span className="inline-flex flex-col gap-1">
+    <div className="flex min-w-0 flex-col gap-2">
       <button
         type="button"
         onClick={go}
         disabled={busy}
         className={`rounded-md border px-2 py-1 text-xs transition-colors disabled:opacity-50 ${toneClass}`}
       >
-        {busy ? "执行中…" : label}
+        {busy ? "执行中…" : preview ? preview.targetHash ? "备份并应用" : "确认安装" : `${label} · 预览`}
       </button>
+      {preview ? <div className="w-full min-w-0 space-y-3 rounded-lg border border-violet-500/30 bg-slate-900 p-3"><p className="text-xs text-slate-300">{preview.differences.length} 个文件变化；原件将保存在同步备份中。</p><FileDiff files={preview.differences} /><button type="button" className="text-xs text-slate-400" onClick={() => setPreview(null)}>取消预览</button></div> : null}
       {msg ? <span className="max-w-56 text-[10px] leading-tight text-slate-500">{msg}</span> : null}
-    </span>
+    </div>
   );
 }

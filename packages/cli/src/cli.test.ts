@@ -37,6 +37,19 @@ async function runJson(args: string[]): Promise<unknown> {
 }
 
 describe("CLI", () => {
+  it("差异预览、修复与备份恢复覆盖完整目录且保留原件", async () => {
+    writeFixture();
+    const diff = await runJson(["diff", "alpha", "--to", "claude", "--from", "agents"]) as { differences: Array<{ path: string }> };
+    expect(diff.differences.map((f) => f.path)).toContain("SKILL.md");
+    const original = fs.readFileSync(path.join(home, ".claude", "skills", "alpha", "SKILL.md"), "utf8");
+    const file = path.join(home, "edit.md"); fs.writeFileSync(file, original + "\n核查输入并提供验收记录。".repeat(8));
+    const preview = await runJson(["repair-preview", "alpha", "--from", "claude", "--file", file]) as { expectedHash: string };
+    expect(fs.readFileSync(path.join(home, ".claude", "skills", "alpha", "SKILL.md"), "utf8")).toBe(original);
+    const applied = await runJson(["repair", "alpha", "--from", "claude", "--file", file, "--expected-hash", preview.expectedHash]) as { backupId: string };
+    expect((await runJson(["backups"]) as Array<{ id: string }>).some((b) => b.id === applied.backupId)).toBe(true);
+    await runJson(["restore", applied.backupId]);
+    expect(fs.readFileSync(path.join(home, ".claude", "skills", "alpha", "SKILL.md"), "utf8")).toBe(original);
+  });
   it("list 返回全部 skill 且可按来源过滤", async () => {
     writeFixture();
     const all = (await runJson(["list"])) as Array<{ name: string; source: string }>;

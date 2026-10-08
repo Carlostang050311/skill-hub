@@ -5,6 +5,7 @@ import { getScan } from "@/lib/data";
 import { getAllRunReports, getEvalData, getExecResults } from "@/lib/evaldb";
 import { gradeOf, healthScore, warningCategories } from "@/lib/health";
 import { buildTrend, skillDeltas } from "@/lib/trend";
+import { reportStatus, reportStatusLabel } from "@/lib/report-status";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ export default function EvalPage() {
         <p className="mt-1 text-sm text-slate-500">
           模型评测（触发准确性 + 指令清晰度）与静态质量分的合成报告
         </p>
+        <Link href="/workbench" className="mt-2 inline-block text-sm text-violet-300">启动评测或复测 →</Link>
       </header>
 
       {latest ? (
@@ -36,6 +38,7 @@ export default function EvalPage() {
               <Stat label="平均清晰度" value={latest.summary.avgClarity == null ? "—" : Math.round(latest.summary.avgClarity)} />
               <Stat label="平均静态" value={Math.round(latest.summary.avgStatic)} />
             </div>
+            <p className="mt-3 text-xs text-slate-500">完成率 {latest.report.completionRate == null ? "旧报告未记录" : `${latest.report.completionRate}%`} · 错误 {latest.report.errors ?? "旧报告未记录"}。历史成绩不证明当前副本有效，请核对版本标识。</p>
           </Card>
 
           {(() => {
@@ -43,7 +46,7 @@ export default function EvalPage() {
             if (execRows.length === 0) return null;
             return (
               <Card>
-                <SectionTitle hint="沙箱真实作业 + 双评审独立复核">执行级实测成绩</SectionTitle>
+                <SectionTitle hint="历史执行结果与程序验收状态">执行级实测成绩</SectionTitle>
                 <div className="grid grid-cols-2 gap-2 text-xs md:grid-cols-4 lg:grid-cols-6">
                   {execRows.map((r) => (
                     <div key={r.skill} className="rounded-lg border border-slate-800 bg-slate-950/40 p-3">
@@ -58,11 +61,12 @@ export default function EvalPage() {
                           {r.passed}/{r.total}
                         </span>
                       </div>
+                      <p className="mt-1 text-[10px] text-slate-500">{r.stale ? "版本已变化，需要复测" : r.verified ? "已绑定版本并执行程序验收" : "历史成绩：版本或程序验收未记录"}</p>
                     </div>
                   ))}
                 </div>
                 <p className="mt-2 text-[10px] text-slate-600">
-                  共 {execRows.length} 个 skill 执行过沙箱任务；每格为官方评审通过率（{execRows[0]?.passed}/{execRows[0]?.total} 制）。
+                  共 {execRows.length} 个 skill 有执行记录；评分与各自核查单项数一起展示。
                 </p>
               </Card>
             );
@@ -85,6 +89,7 @@ export default function EvalPage() {
               <tbody>
                 {latest.report.results.map((r) => {
                   const grade = gradeOf(r.overall ?? 0);
+                  const status = reportStatus(r, scan.skills.find((s) => r.skillId ? s.id === r.skillId : s.name === r.skill && s.source === r.source));
                   return (
                     <tr key={r.skill} className="border-b border-slate-800/60 align-top last:border-0 hover:bg-slate-800/30">
                       <td className="px-4 py-2.5">
@@ -96,7 +101,7 @@ export default function EvalPage() {
                         </div>
                       </td>
                       <td className="px-4 py-2.5">
-                        <Badge tone={gradeTone(grade)}>{grade}</Badge>
+                        <Badge tone={status === "complete" ? gradeTone(grade) : "amber"}>{status === "complete" ? grade : reportStatusLabel[status]}</Badge><p className="mt-1 text-[10px] text-slate-500">{r.completedJobs ?? "—"}/{r.expectedJobs ?? "—"} 作业 · 错误 {r.errors}</p>
                       </td>
                       <td className="px-4 py-2.5 text-right tabular-nums text-slate-200">{r.overall ?? "—"}</td>
                       <td className="px-4 py-2.5 text-right tabular-nums text-slate-300">
@@ -175,22 +180,22 @@ export default function EvalPage() {
                 const deltas = skillDeltas(
                   getAllRunReports().flatMap((run) =>
                     run.report.results
-                      .filter((r) => r.overall != null)
-                      .map((r) => ({ runId: run.summary.id, skill: r.skill, overall: r.overall as number })),
+                      .filter((r) => r.overall != null && r.status === "complete")
+                      .map((r) => ({ runId: run.summary.id, skill: r.skill, overall: r.overall as number, skillId: r.skillId, skillHash: r.skillHash, scenarioHash: r.scenarioHash, source: r.source, model: run.summary.model, backend: run.summary.backend })),
                   ),
                 ).slice(0, 8);
                 if (deltas.length === 0) return null;
                 return (
                   <div className="mt-4 border-t border-slate-800 pt-3">
-                    <div className="mb-2 text-xs font-medium text-slate-300">同名 skill 跨 run 变化（修复前后对比）</div>
+                    <div className="mb-2 text-xs font-medium text-slate-300">版本前后对比（相同副本、用例、模型与后端）</div>
                     <div className="space-y-1">
                       {deltas.map((d) => (
-                        <div key={d.name} className="flex items-baseline justify-between gap-3 text-xs">
+                        <div key={d.key} className="flex flex-wrap items-baseline justify-between gap-3 text-xs">
                           <Link href={`/skills/${d.name}`} className="truncate text-slate-300 hover:text-violet-300">
                             {d.name}
                           </Link>
                           <span className="tabular-nums text-slate-500">
-                            #{d.first.runId} {d.first.overall} → #{d.latest.runId} {d.latest.overall}
+                            {d.source} · {d.model} · #{d.first.runId} {d.first.overall} → #{d.latest.runId} {d.latest.overall}<br /><span className="break-all font-mono text-[10px]">{d.first.skillHash} → {d.latest.skillHash}</span>
                           </span>
                           <span className={`w-10 text-right tabular-nums ${d.delta > 0 ? "text-emerald-400" : "text-rose-400"}`}>
                             {d.delta > 0 ? "+" : ""}
@@ -229,7 +234,7 @@ export default function EvalPage() {
           <ul className="list-inside list-disc space-y-1.5 text-xs text-slate-400">
             <li>静态分 = 100 − 10 × 警告数（下限 0）</li>
             <li>模型层：触发准确性（scenario 用例判定）+ 指令清晰度（自洽 / 可执行 / 边界，各 1-5 分）</li>
-            <li>overall = 触发 40% + 清晰度 30% + 静态 30%，缺失层权重再归一</li>
+            <li>overall = 触发 40% + 清晰度 30% + 静态 30%；用例未完成、结果无效或版本已变化时不提供完整总分</li>
             <li>报告存于 <Mono>~/.skillhub/eval.db</Mono>，历史可对比</li>
           </ul>
         </Card>

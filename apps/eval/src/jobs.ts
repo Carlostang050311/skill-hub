@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import type { SkillRecord } from "@skillhub/core";
-import { parseSkillSource } from "@skillhub/core";
+import { hashContent, parseSkillSource } from "@skillhub/core";
 import { renderClarityPrompt, renderTriggerPrompt } from "./prompts.js";
 import type { EvalJob, JobResult, Scenario } from "./types.js";
 
@@ -22,8 +22,13 @@ export interface PlanOutput {
 }
 
 /** 从 scenario 构建作业：每个 skill 一条 clarity + 每条用例一条 trigger */
-export function buildJobs(scenarios: Scenario[], records: SkillRecord[]): PlanOutput {
+export function buildJobs(scenarios: Scenario[], records: SkillRecord[], recordIds: Record<string, string> = {}): PlanOutput {
   const byName = pickPreferred(records);
+  for (const [name, id] of Object.entries(recordIds)) {
+    const record = records.find((r) => r.id === id && r.name === name);
+    if (!record) throw new Error(`找不到所选副本：${name} ${id}`);
+    byName.set(name, record);
+  }
   const jobs: EvalJob[] = [];
   const skipped: string[] = [];
   for (const sc of scenarios) {
@@ -33,8 +38,11 @@ export function buildJobs(scenarios: Scenario[], records: SkillRecord[]): PlanOu
       continue;
     }
     const { body } = parseSkillSource(fs.readFileSync(rec.skillPath, "utf8"));
+    const metadata = { skillId: rec.id, skillPath: rec.skillPath, skillHash: rec.hash, scenarioHash: hashContent(JSON.stringify(sc)) };
     jobs.push({
+      ...metadata,
       id: `clarity:${sc.skill}`,
+      scenario: sc,
       type: "clarity",
       skill: sc.skill,
       messages: [{ role: "user", content: renderClarityPrompt({ name: rec.name, body }) }],
@@ -42,6 +50,7 @@ export function buildJobs(scenarios: Scenario[], records: SkillRecord[]): PlanOu
     let caseIndex = 0;
     for (const utterance of sc.shouldTrigger) {
       jobs.push({
+        ...metadata,
         id: `trigger:${sc.skill}:${caseIndex}`,
         type: "trigger",
         skill: sc.skill,
@@ -52,6 +61,7 @@ export function buildJobs(scenarios: Scenario[], records: SkillRecord[]): PlanOu
     }
     for (const utterance of sc.shouldNotTrigger) {
       jobs.push({
+        ...metadata,
         id: `trigger:${sc.skill}:${caseIndex}`,
         type: "trigger",
         skill: sc.skill,
@@ -86,9 +96,9 @@ export function parseResultsFile(text: string): JobResult[] {
     const trimmed = line.trim();
     if (!trimmed) continue;
     try {
-      const obj = JSON.parse(trimmed) as { id?: unknown; raw?: unknown };
+    const obj = JSON.parse(trimmed) as { id?: unknown; raw?: unknown; error?: unknown; latencyMs?: unknown; tokens?: unknown };
       if (typeof obj.id === "string" && typeof obj.raw === "string") {
-        out.push({ id: obj.id, raw: obj.raw });
+        out.push({ id: obj.id, raw: obj.raw, error: typeof obj.error === "string" ? obj.error : undefined, latencyMs: typeof obj.latencyMs === "number" ? obj.latencyMs : undefined, tokens: typeof obj.tokens === "number" ? obj.tokens : undefined });
       }
     } catch {
       // 跳过坏行，不让单行失败毁掉整个文件

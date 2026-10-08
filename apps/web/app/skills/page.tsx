@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Badge, Card } from "@/components/ui";
 import { getScan } from "@/lib/data";
+import { skillUsageCard } from "@skillhub/core";
+import { RecommendationPanel } from "@/components/RecommendationPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +21,8 @@ export default async function SkillsPage({
     .filter((s) => !source || s.source === source)
     .filter((s) => {
       if (!q) return true;
-      return s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q);
+      const card = skillUsageCard(s);
+      return [s.name, s.description, ...card.aliases, ...card.scenarios].some((text) => text.toLowerCase().includes(q));
     })
     .sort((a, b) => a.name.localeCompare(b.name) || a.source.localeCompare(b.source));
   const LIMIT = 120;
@@ -32,6 +35,7 @@ export default async function SkillsPage({
         <h1 className="text-2xl font-semibold text-slate-100">技能库</h1>
         <p className="mt-1 text-sm text-slate-500">共 {skills.length} 条{q ? `（匹配 “${q}”）` : ""}</p>
       </header>
+      <Card><RecommendationPanel /></Card>
 
       <form className="flex flex-wrap items-center gap-3" action="/skills">
         <input
