@@ -15,6 +15,7 @@ function skill(source, name, description, body, files = {}) {
 }
 skill("agents", "report-maker", "根据提供的数据生成有来源的数据报告", "简短的说明", { "scripts/run.mjs": "console.log('new');\n", "new.txt": "new resource" });
 skill("claude", "report-maker", "根据提供的数据生成有来源的数据报告", "简短的说明", { "scripts/run.mjs": "console.log('old');\n", "old.txt": "old resource" });
+skill("agents", "report-checker", "根据提供的数据生成有来源的数据报告", "核对报告来源与数据");
 for (const [name, description] of Object.entries({ "academic-pptx": "Build academic slides and presentations", "humanizer-zh": "润色中文文章，保留事实和引用", pdf: "Read and create PDF documents", "decision-mapping": "梳理决策与约束", "domain-modeling": "梳理领域模型", prototype: "Build interactive prototypes", tdd: "Test-driven development", "frontend-design": "Implement frontend interfaces", playwright: "Browser automation and screenshots" })) skill("agents", name, description, "按提供的材料执行，验证输入和输出，不添加没有依据的信息。".repeat(8));
 const localScenarios = path.join(home, ".skillhub", "scenarios");
 fs.mkdirSync(localScenarios, { recursive: true });

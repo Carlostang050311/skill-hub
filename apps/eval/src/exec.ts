@@ -272,7 +272,7 @@ export function ensureSandbox(root: string, skill: string): string {
   const boundary = path.resolve(root) + path.sep;
   if (dir !== path.resolve(root) && !dir.startsWith(boundary)) throw new Error(`沙箱路径越界：${dir}`);
   fs.mkdirSync(dir, { recursive: true });
-  return dir;
+  return fs.mkdtempSync(path.join(dir, "run-"));
 }
 
 export interface ExecScenario {

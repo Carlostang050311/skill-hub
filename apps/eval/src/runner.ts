@@ -73,14 +73,19 @@ export class EvalTaskRunner {
       return current && old && current.skillId === old.skillId && current.skillHash === old.skillHash && current.scenarioHash === old.scenarioHash && validJobResult(current, r);
     }) : [];
     const task: EvalTask = { id: randomUUID(), createdAt: new Date().toISOString(), updatedAt: "", status: input.backend === "api" ? "running" : "awaiting-results", backend: input.backend, model: input.model, baseUrl, jobs: input.jobs, results, retryOf: input.retryOf };
+    try { this.persist(task); }
+    catch (error) {
+      const message = error instanceof Error ? error.message : "写入失败";
+      throw new Error(`任务持久化失败：${input.apiKey ? message.replaceAll(input.apiKey, "[redacted]") : message}`);
+    }
     this.tasks.set(task.id, task);
-    this.persist(task);
     if (input.backend === "api") {
       const controller = new AbortController();
       this.controllers.set(task.id, controller);
       const promise = this.run(task, input.apiKey!, controller);
       this.pending.set(task.id, promise);
-      void promise.finally(() => { this.pending.delete(task.id); this.controllers.delete(task.id); });
+      const cleanup = () => { this.pending.delete(task.id); this.controllers.delete(task.id); };
+      void promise.then(cleanup, cleanup);
     }
     return task;
   }
@@ -117,7 +122,8 @@ export class EvalTaskRunner {
     } catch (error) {
       task.status = "failed";
       task.error = error instanceof Error ? error.message.replaceAll(key, "[redacted]") : "评测报告保存失败";
-      this.persist(task);
+      try { this.persist(task); }
+      catch (persistError) { task.error += `；状态持久化失败：${persistError instanceof Error ? persistError.message.replaceAll(key, "[redacted]") : "写入失败"}。已完成结果暂存内存，请导出并检查磁盘后重试`; }
     }
   }
   cancel(id: string): EvalTask {

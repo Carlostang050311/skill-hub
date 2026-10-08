@@ -56,7 +56,11 @@ npm run skillhub-eval -- plan --from claude --names demo
 
 Web `/workbench` 可选择具体副本、用例、后端和模型，运行 API 跑批或下载 ZCode 作业 JSONL 再导入结果；支持进度、取消、失败重试、Markdown/HTML 导出及本地正反例编辑。API 使用进程中已有的 `SKILLHUB_API_KEY`、`SKILLHUB_MODEL`、`SKILLHUB_BASE_URL`，页面和任务文件不保存密钥。
 
+Web 开发与生产服务默认仅监听 `127.0.0.1`，写入接口检查本地 Host 与页面来源。`/eval` 用黄色列表提醒描述相近的技能，方便核对触发边界。坏用例或备份清单会单独提示并保留原文件，正常记录仍可使用。目标目录移走后可在同步页预览恢复，或执行 `skillhub restore <id> --target-missing`；该选项与 `--expected-hash` 互斥，目标重新出现时拒绝覆盖。
+
 完整总分要求作业全部有效，权重固定为触发 40% + 清晰度 30% + 静态 30%。缺失或无效结果不重新分配权重。成绩绑定具体副本、完整目录和用例指纹；技能变动标为过期，旧报告标为未绑定。版本对比限制相同副本、用例、模型与后端，仍需结合实际输出判断修复效果。
+
+操作台和下载报告都会复核当前技能及用例版本，过期结果隐藏当前总分，历史任务原件保留。每轮执行评测创建独立的 `run-*` 目录，保留旧现场，避免旧产物冒充本轮产出。
 
 执行级评测会读取真实文件并执行声明的程序检查，不能仅凭模型声称产物存在判定通过。工作目录不是操作系统安全隔离；执行可信技能时自行选择运行环境。见 [产物检查](docs/exec-checks.md)、[使用卡片元数据](docs/usage-cards.md)、[失败案例库](docs/cases/README.md) 和 [本轮验收](docs/implementation-acceptance.md)。
 

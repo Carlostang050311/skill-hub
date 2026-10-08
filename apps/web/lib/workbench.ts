@@ -1,15 +1,33 @@
 import fs from "node:fs";
 import path from "node:path";
-import { defaultRoots, hashContent, scanAll } from "@skillhub/core";
-import { EvalTaskRunner, insertRun, parseScenarioYaml, openDb, scoreRun, type Scenario } from "@skillhub/eval";
+import { defaultRoots, hashContent, scanAll, type SkillRecord } from "@skillhub/core";
+import { EvalTaskRunner, insertRun, parseScenarioYaml, openDb, scoreRun, type EvalTask, type Scenario } from "@skillhub/eval";
 import { projectRoot, skillhubHome, stateRoot } from "./paths";
+import { reportStatus } from "./report-status";
 
 export interface ScenarioChoice { key: string; scenario: Scenario }
-export function scenarioChoices(): ScenarioChoice[] {
+/** 展示和导出复核当前指纹，历史任务与原始分数保持不变。 */
+export function currentTaskView(task: EvalTask, records: SkillRecord[], choices: ScenarioChoice[]): EvalTask {
+  if (!task.report) return task;
+  const results = task.report.results.map((row) => {
+    const record = records.find((r) => row.skillId ? r.id === row.skillId : r.name === row.skill && r.source === row.source);
+    const stale = reportStatus(row, record) === "stale" || Boolean(row.scenarioHash && !choices.some((c) => c.scenario.skill === row.skill && hashContent(JSON.stringify(c.scenario)) === row.scenarioHash));
+    if (!stale) return row;
+    const issue = "skill 或用例版本已变化，需要重新评测";
+    return { ...row, status: "stale" as const, overall: null, issues: row.issues.includes(issue) ? row.issues : [...row.issues, issue] };
+  });
+  if (!results.some((row) => row.status === "stale")) return task;
+  return { ...task, status: task.status === "completed" ? "failed" : task.status, error: "skill 或用例版本已变化，历史任务原件保留，请重新评测", report: { ...task.report, results, avgOverall: null } };
+}
+export function scenarioChoices(recoveryErrors: string[] = []): ScenarioChoice[] {
   return ["scenarios", "scenarios-auto", "local"].flatMap((dir) => {
     const root = dir === "local" ? path.join(stateRoot(), "scenarios") : path.join(projectRoot(), dir);
     if (!fs.existsSync(root)) return [];
-    return fs.readdirSync(root).filter((f) => /\.ya?ml$/i.test(f)).sort().map((file) => ({ key: `${dir}/${file}`, scenario: parseScenarioYaml(fs.readFileSync(path.join(root, file), "utf8"), file) }));
+    return fs.readdirSync(root).filter((f) => /\.ya?ml$/i.test(f)).sort().flatMap((file) => {
+      const key = `${dir}/${file}`;
+      try { return [{ key, scenario: parseScenarioYaml(fs.readFileSync(path.join(root, file), "utf8"), key) }]; }
+      catch (error) { recoveryErrors.push(`用例文件无法读取，已保留原文件：${key} · ${error instanceof Error ? error.message : "解析失败"}`); return []; }
+    });
   });
 }
 

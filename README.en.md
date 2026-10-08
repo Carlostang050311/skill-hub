@@ -56,7 +56,11 @@ npm run skillhub-eval -- plan --from claude --names demo
 
 At `/workbench`, select a specific copy, scenario, backend and model. Run an OpenAI-compatible API batch or download ZCode jobs as JSONL and import results. Progress, cancellation, retry, local scenario editing and Markdown/HTML export are available. API credentials come from the process environment (`SKILLHUB_API_KEY`); the UI and task files do not store keys.
 
+Development and production servers bind to `127.0.0.1`; mutation routes verify the local Host and page origin. `/eval` highlights similar descriptions in amber for trigger-boundary review. Invalid scenario or backup files are reported individually and preserved while healthy records remain usable. Restore a missing target through the sync preview or `skillhub restore <id> --target-missing`. This option conflicts with `--expected-hash` and refuses to overwrite a target that reappears.
+
 Overall scores require every expected job to be valid. Weights remain trigger 40%, clarity 30%, static 30%; missing layers are never reweighted. Results bind to copy, directory and scenario fingerprints. Changed skills are stale; legacy reports are unbound. Version comparisons require the same copy, scenarios, model and backend.
+
+Workbench views and downloaded reports recheck current skill and scenario versions. Stale results omit current overall scores while historical task files remain unchanged. Every execution plan creates a separate `run-*` directory, retaining previous artifacts without accepting them as a new run's output.
 
 Execution evaluation reads actual artifacts and runs declared checks. A model assertion alone cannot prove an artifact exists. A working directory is not OS security isolation. See [artifact checks](docs/exec-checks.md), [usage cards](docs/usage-cards.md), [failure cases](docs/cases/README.md) and [acceptance evidence](docs/implementation-acceptance.md).
 

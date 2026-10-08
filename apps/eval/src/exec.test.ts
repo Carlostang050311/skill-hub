@@ -107,6 +107,18 @@ describe("执行→评审 两阶段", () => {
     expect(() => ensureSandbox(root, "../escape")).toThrow(/越界/);
     fs.rmSync(root, { recursive: true, force: true });
   });
+  it("连续两轮使用不同目录，旧产物不能让未产出的新轮通过", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "skillhub-exec-rounds-"));
+    const first = ensureSandbox(root, "demo");
+    fs.writeFileSync(path.join(first, "report.json"), '{"source":"previous round"}');
+    const second = ensureSandbox(root, "demo");
+    const spec: ExecSpec = { task: "输出报告", artifacts: ["report.json"], rubric: ["报告存在"], checks: [{ type: "json", file: "report.json" }] };
+    const judge = JSON.stringify({ rubric: [{ item: "报告存在", pass: true, evidence: "声称存在" }] });
+    expect(second).not.toBe(first);
+    expect(scoreExec(spec, judge, first).accepted).toBe(true);
+    expect(scoreExec(spec, judge, second).accepted).toBe(false);
+    expect(fs.existsSync(path.join(first, "report.json"))).toBe(true);
+  });
 
   it("执行者提示词与评审提示词包含关键要素", () => {
     const spec: ExecSpec = { task: "写报告", artifacts: ["report.md"], rubric: ["非空"] };

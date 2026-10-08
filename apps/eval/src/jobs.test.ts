@@ -90,6 +90,13 @@ describe("buildJobs", () => {
     expect(jobs[0]?.messages[0]?.content).toContain("claude repaired");
     expect(() => buildJobs([sc], [agents], { demo: claude.id })).toThrow(/所选副本/);
   });
+  it("未选择的技能副本消失不阻断当前评测", () => {
+    const demo = rec("demo"); demo.skillPath = makeRealSkill("当前评测正文");
+    const { jobs } = buildJobs([sc], [demo], { demo: demo.id, unrelated: "agents::removed" });
+    expect(jobs).toHaveLength(4);
+    expect(jobs[0]?.skillId).toBe(demo.id);
+    expect(() => buildJobs([sc], [demo], { demo: "agents::removed" })).toThrow(/所选副本/);
+  });
 });
 
 describe("parseModelJson", () => {

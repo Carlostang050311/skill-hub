@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { buildJobs, parseResultsFile, exportReport, validateApiUrl } from "@skillhub/eval";
 import { hashContent } from "@skillhub/core";
-import { evalRunner, scenarioChoices, saveLocalScenario } from "@/lib/workbench";
+import { currentTaskView, evalRunner, scenarioChoices, saveLocalScenario } from "@/lib/workbench";
 import { getScan } from "@/lib/data";
 import { checkMutationOrigin } from "@/lib/mutations";
 
@@ -12,7 +12,8 @@ export async function GET(req: Request): Promise<Response> {
     const params = new URL(req.url).searchParams;
     const id = params.get("id");
     if (id) {
-      const task = evalRunner().get(id);
+      const original = evalRunner().get(id);
+      const task = currentTaskView(original, getScan().skills, scenarioChoices());
       if (params.get("download") === "jobs") return new Response(task.jobs.map((j) => JSON.stringify(j)).join("\n") + "\n", { headers: { "content-type": "application/x-ndjson", "content-disposition": `attachment; filename="eval-jobs-${id}.jsonl"` } });
       const format = params.get("format");
       if (format === "markdown" || format === "html") {
@@ -21,7 +22,10 @@ export async function GET(req: Request): Promise<Response> {
       }
       return NextResponse.json(task);
     }
-    return NextResponse.json({ recoveryErrors: evalRunner().recoveryErrors, tasks: evalRunner().list().slice(0, 30).map(({ jobs, results, report, ...task }) => ({ ...task, expectedJobs: jobs.length, completedJobs: results.filter((r) => !r.error).length, failedJobs: results.filter((r) => r.error).length, hasReport: Boolean(report) })), scenarios: scenarioChoices().map(({ key, scenario }) => ({ key, skill: scenario.skill, positives: scenario.shouldTrigger.length, negatives: scenario.shouldNotTrigger.length, hash: hashContent(JSON.stringify(scenario)) })), configured: Boolean(process.env.SKILLHUB_API_KEY), model: process.env.SKILLHUB_MODEL ?? "gpt-4o-mini", baseUrl: validateApiUrl(process.env.SKILLHUB_BASE_URL ?? "https://api.openai.com/v1") });
+    const recoveryErrors = [...evalRunner().recoveryErrors];
+    const choices = scenarioChoices(recoveryErrors);
+    const records = getScan().skills;
+    return NextResponse.json({ recoveryErrors, tasks: evalRunner().list().slice(0, 30).map((task) => currentTaskView(task, records, choices)).map(({ jobs, results, report, ...task }) => ({ ...task, expectedJobs: jobs.length, completedJobs: results.filter((r) => !r.error).length, failedJobs: results.filter((r) => r.error).length, hasReport: Boolean(report) })), scenarios: choices.map(({ key, scenario }) => ({ key, skill: scenario.skill, positives: scenario.shouldTrigger.length, negatives: scenario.shouldNotTrigger.length, hash: hashContent(JSON.stringify(scenario)) })), configured: Boolean(process.env.SKILLHUB_API_KEY), model: process.env.SKILLHUB_MODEL ?? "gpt-4o-mini", baseUrl: validateApiUrl(process.env.SKILLHUB_BASE_URL ?? "https://api.openai.com/v1") });
   } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "评测数据读取失败" }, { status: 400 }); }
 }
 

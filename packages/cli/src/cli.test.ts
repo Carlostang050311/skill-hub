@@ -37,6 +37,18 @@ async function runJson(args: string[]): Promise<unknown> {
 }
 
 describe("CLI", () => {
+  it("CLI 显式恢复缺失目标，且空目标预期与内容指纹选项互斥", async () => {
+    writeFixture();
+    const target = path.join(home, ".claude", "skills", "alpha");
+    const original = fs.readFileSync(path.join(target, "SKILL.md"), "utf8");
+    const installed = await runJson(["install", "alpha", "--to", "claude", "--from", "agents", "--force"]) as { backupId: string };
+    fs.renameSync(target, path.join(home, "archived-alpha"));
+    await expect(runJson(["restore", installed.backupId])).rejects.toThrow(/当前内容已变化/);
+    await expect(runJson(["restore", installed.backupId, "--target-missing", "--expected-hash", "hash"])).rejects.toThrow(/互斥/);
+    await runJson(["restore", installed.backupId, "--target-missing"]);
+    expect(fs.readFileSync(path.join(target, "SKILL.md"), "utf8")).toBe(original);
+    await expect(runJson(["restore", installed.backupId, "--target-missing"])).rejects.toThrow(/当前内容已变化/);
+  });
   it("差异预览、修复与备份恢复覆盖完整目录且保留原件", async () => {
     writeFixture();
     const diff = await runJson(["diff", "alpha", "--to", "claude", "--from", "agents"]) as { differences: Array<{ path: string }> };

@@ -24,7 +24,9 @@ export interface PlanOutput {
 /** 从 scenario 构建作业：每个 skill 一条 clarity + 每条用例一条 trigger */
 export function buildJobs(scenarios: Scenario[], records: SkillRecord[], recordIds: Record<string, string> = {}): PlanOutput {
   const byName = pickPreferred(records);
-  for (const [name, id] of Object.entries(recordIds)) {
+  for (const name of new Set(scenarios.map((scenario) => scenario.skill))) {
+    const id = recordIds[name];
+    if (id === undefined) continue;
     const record = records.find((r) => r.id === id && r.name === name);
     if (!record) throw new Error(`找不到所选副本：${name} ${id}`);
     byName.set(name, record);

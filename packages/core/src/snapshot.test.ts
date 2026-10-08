@@ -20,6 +20,41 @@ function fixture() {
 afterEach(() => { vi.restoreAllMocks(); for (const dir of dirs.splice(0)) fs.rmSync(dir, { recursive: true, force: true }); });
 
 describe("完整目录指纹与同步恢复", () => {
+  it.each([false, true])("备份清单写入中断时恢复目标且不公开残缺备份（跨卷 %s）", (crossVolume) => {
+    const { a, b, backups } = fixture();
+    const old = snapshotDirectory(b).hash;
+    const rename = fs.renameSync.bind(fs);
+    if (crossVolume) vi.spyOn(fs, "renameSync").mockImplementation((from, to) => {
+      if (String(from) === b && String(to).startsWith(backups)) throw Object.assign(new Error("cross volume"), { code: "EXDEV" });
+      rename(from, to);
+    });
+    const write = fs.writeFileSync.bind(fs);
+    vi.spyOn(fs, "writeFileSync").mockImplementation((file, data, options) => {
+      if (String(file).startsWith(backups)) { write(file, '{"id":', options); throw new Error("metadata write failed"); }
+      write(file, data, options);
+    });
+    expect(() => replaceSkillDirectory(a, b, backups, old)).toThrow("metadata write failed");
+    expect(snapshotDirectory(b).hash).toBe(old);
+    expect(listBackups(backups)).toEqual([]);
+  });
+  it("坏清单和无效日期单独报告，正常备份仍可列出与恢复", () => {
+    const { a, b, backups } = fixture();
+    const old = snapshotDirectory(b).hash;
+    const good = replaceSkillDirectory(a, b, backups, old);
+    for (const [id, text] of [
+      ["11111111-1111-1111-1111-111111111111", '{"id":'],
+      ["22222222-2222-2222-2222-222222222222", JSON.stringify({ ...listBackups(backups)[0], id: "22222222-2222-2222-2222-222222222222", createdAt: null })],
+    ]) {
+      fs.mkdirSync(path.join(backups, id!), { recursive: true });
+      fs.writeFileSync(path.join(backups, id!, "backup.json"), text!);
+    }
+    const errors: string[] = [];
+    expect(listBackups(backups, errors).map((backup) => backup.id)).toEqual([good.backupId]);
+    expect(errors).toHaveLength(2);
+    expect(errors[0]).toContain("11111111-1111-1111-1111-111111111111");
+    restoreSkillBackup(backups, good.backupId!, [path.dirname(b)]);
+    expect(snapshotDirectory(b).hash).toBe(old);
+  });
   it("跨卷备份采用复制校验，交换失败回滚且不发布伪备份", () => {
     const { home, a, b, backups } = fixture();
     const old = snapshotDirectory(b).hash;
@@ -78,6 +113,17 @@ describe("完整目录指纹与同步恢复", () => {
     expect(() => restoreSkillBackup(backups, installed.backupId!, [path.join(home, ".claude", "skills")])).toThrow(/当前内容已变化/);
     expect(fs.readFileSync(path.join(b, "later.txt"), "utf8")).toBe("keep later");
     expect(() => restoreSkillBackup(backups, installed.backupId!, [path.join(home, "elsewhere")])).toThrow(/允许/);
+  });
+  it("目标移走后可显式预览空目录并恢复，预览后出现新目标会拒绝覆盖", () => {
+    const { home, a, b, backups } = fixture();
+    const old = snapshotDirectory(b).hash;
+    const installed = replaceSkillDirectory(a, b, backups, old);
+    fs.renameSync(b, path.join(home, "moved-copy"));
+    expect(compareDirectories(path.join(backups, installed.backupId!, "skill"), b).every((file) => file.status === "added")).toBe(true);
+    expect(() => restoreSkillBackup(backups, installed.backupId!, [path.dirname(b)])).toThrow(/当前内容已变化/);
+    restoreSkillBackup(backups, installed.backupId!, [path.dirname(b)], null);
+    expect(snapshotDirectory(b).hash).toBe(old);
+    expect(() => restoreSkillBackup(backups, installed.backupId!, [path.dirname(b)], null)).toThrow(/当前内容已变化/);
   });
   it("二进制内容、文件路径变化会影响指纹，构建垃圾不影响", () => {
     const { a } = fixture();

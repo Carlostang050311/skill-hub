@@ -15,10 +15,17 @@ export function registerWorkbenchCommands(program: Command): void {
       print(previewInstall(records(opts.home), name, { to: opts.to, from: opts.from, home: getHome(opts.home) }));
     });
   program.command("backups").description("列出同步与修复备份").option("--home <dir>", "覆盖用户主目录").option("--json", "JSON 输出")
-    .action((opts: { home?: string }) => print(listBackups(path.join(getHome(opts.home), ".skillhub", "backups"))));
+    .action((opts: { home?: string }) => {
+      const errors: string[] = [];
+      print(listBackups(path.join(getHome(opts.home), ".skillhub", "backups"), errors));
+      if (errors.length) console.error(errors.join("\n"));
+    });
   program.command("restore <id>").description("恢复备份；当前内容变化时拒绝覆盖")
-    .option("--home <dir>", "覆盖用户主目录").option("--expected-hash <hash>", "检查差异后确认的当前内容指纹").option("--json", "JSON 输出")
-    .action((id: string, opts: { home?: string; expectedHash?: string }) => print(restoreSkillBackup(path.join(getHome(opts.home), ".skillhub", "backups"), id, defaultRoots(getHome(opts.home)).filter((r) => r.sourceKind !== "plugin-cache").map((r) => r.path), opts.expectedHash)));
+    .option("--home <dir>", "覆盖用户主目录").option("--expected-hash <hash>", "检查差异后确认的当前内容指纹").option("--target-missing", "确认目标目录已不存在，按空目标恢复").option("--json", "JSON 输出")
+    .action((id: string, opts: { home?: string; expectedHash?: string; targetMissing?: boolean }) => {
+      if (opts.targetMissing && opts.expectedHash !== undefined) throw new Error("--target-missing 与 --expected-hash 互斥");
+      print(restoreSkillBackup(path.join(getHome(opts.home), ".skillhub", "backups"), id, defaultRoots(getHome(opts.home)).filter((r) => r.sourceKind !== "plugin-cache").map((r) => r.path), opts.targetMissing ? null : opts.expectedHash));
+    });
   for (const apply of [false, true]) {
     const command = program.command(`${apply ? "repair" : "repair-preview"} <name>`).description(apply ? "应用已预览的指导书修复，完整备份原件" : "预览指导书修复和质量变化，不写入文件")
       .requiredOption("--file <file>", "编辑后的 SKILL.md 文件").option("--from <kind>", "指定可写来源").option("--home <dir>", "覆盖用户主目录").option("--json", "JSON 输出");

@@ -1,0 +1,171 @@
+{
+  "date": "2026-10-08T13:04:54.9851143Z",
+  "originalEvidence": ".skillhub/acceptance-E1epBu/browser/evidence.json",
+  "note": "本地协议夹具，不是真实模型质量成绩",
+  "checks": [
+    "真实本机 CLI 扫描，只读统计与解析失败明细留存",
+    "真实库存 8 页面 × 桌面/移动端渲染、无页面溢出",
+    "体检页黄色重叠警示与 CLI 碰撞检测一致",
+    "真实 Hook 普通输入注入、子代理/自家仓库零输出与重复抑制",
+    "CLI / MCP stdio / Web 推荐身份、分数、理由一致与真实界面提交",
+    "同步逐文件预览无写入 → 应用备份 → Web 恢复完整旧资源",
+    "坏备份可见提示不阻断列表；Web/CLI 缺失目标预览并恢复，原现场保留",
+    "修复副本预览与备份 → 同副本复测 → 绑定版本对比 → HTML/Markdown 导出（协议夹具）",
+    "API HTTP 429 明确失败与重试、在途请求取消（协议夹具）",
+    "ZCode JSONL 作业下载与导入、本地正反例保存与重新生成",
+    "坏用例显示文件级错误，健康 API 任务仍可完成与评分",
+    "真实 HTTP 伪造远程 Host/Origin 写入被拒绝",
+    "真实 Windows 跨盘备份与恢复",
+    "连续两轮真实 CLI 执行：无新产物拒绝通过，旧产物仍保留",
+    "真实 CLI 执行产物 JSON 检查、入库指纹绑定与资源改动后的 stale 展示",
+    "操作台与导出重新标记过期、隐藏当前总分，历史任务原件保持完整",
+    "全部浏览器操作无 console error / pageerror"
+  ],
+  "pages": [
+    {
+      "device": "desktop",
+      "route": "/",
+      "screenshot": "desktop-overview.png"
+    },
+    {
+      "device": "desktop",
+      "route": "/skills",
+      "screenshot": "desktop-skills.png"
+    },
+    {
+      "device": "desktop",
+      "route": "/skills/pdf",
+      "screenshot": "desktop-skills-pdf.png"
+    },
+    {
+      "device": "desktop",
+      "route": "/graph",
+      "screenshot": "desktop-graph.png"
+    },
+    {
+      "device": "desktop",
+      "route": "/sync",
+      "screenshot": "desktop-sync.png"
+    },
+    {
+      "device": "desktop",
+      "route": "/eval",
+      "screenshot": "desktop-eval.png"
+    },
+    {
+      "device": "desktop",
+      "route": "/workbench",
+      "screenshot": "desktop-workbench.png"
+    },
+    {
+      "device": "desktop",
+      "route": "/kits",
+      "screenshot": "desktop-kits.png"
+    },
+    {
+      "device": "mobile",
+      "route": "/",
+      "screenshot": "mobile-overview.png"
+    },
+    {
+      "device": "mobile",
+      "route": "/skills",
+      "screenshot": "mobile-skills.png"
+    },
+    {
+      "device": "mobile",
+      "route": "/skills/pdf",
+      "screenshot": "mobile-skills-pdf.png"
+    },
+    {
+      "device": "mobile",
+      "route": "/graph",
+      "screenshot": "mobile-graph.png"
+    },
+    {
+      "device": "mobile",
+      "route": "/sync",
+      "screenshot": "mobile-sync.png"
+    },
+    {
+      "device": "mobile",
+      "route": "/eval",
+      "screenshot": "mobile-eval.png"
+    },
+    {
+      "device": "mobile",
+      "route": "/workbench",
+      "screenshot": "mobile-workbench.png"
+    },
+    {
+      "device": "mobile",
+      "route": "/kits",
+      "screenshot": "mobile-kits.png"
+    }
+  ],
+  "errors": [],
+  "realInventory": {
+    "scannedAt": "2026-10-08T13:01:08.349Z",
+    "records": 317,
+    "uniqueNames": 183,
+    "duplicateGroups": 83,
+    "drift": 8,
+    "warnings": 233,
+    "failed": 3,
+    "roots": [
+      {
+        "path": "C:\\Users\\carlo\\.agents\\skills",
+        "source": "agents",
+        "sourceKind": "agents-global",
+        "exists": true,
+        "count": 131,
+        "failed": 0,
+        "failedFiles": []
+      },
+      {
+        "path": "C:\\Users\\carlo\\.claude\\skills",
+        "source": "claude",
+        "sourceKind": "claude-global",
+        "exists": true,
+        "count": 33,
+        "failed": 0,
+        "failedFiles": []
+      },
+      {
+        "path": "C:\\Users\\carlo\\.codex\\skills",
+        "source": "codex",
+        "sourceKind": "agents-global",
+        "exists": true,
+        "count": 69,
+        "failed": 0,
+        "failedFiles": []
+      },
+      {
+        "path": "C:\\Users\\carlo\\.claude\\plugins\\cache",
+        "source": "claude-plugins",
+        "sourceKind": "plugin-cache",
+        "exists": true,
+        "count": 0,
+        "failed": 0,
+        "failedFiles": []
+      },
+      {
+        "path": "C:\\Users\\carlo\\.zcode\\cli\\plugins\\cache",
+        "source": "zcode-plugins",
+        "sourceKind": "plugin-cache",
+        "exists": true,
+        "count": 84,
+        "failed": 3,
+        "failedFiles": [
+          "C:\\Users\\carlo\\.zcode\\cli\\plugins\\cache\\zcode-plugins-official\\browser-use\\0.3.1\\skills\\web-gui-tester\\SKILL.md",
+          "C:\\Users\\carlo\\.zcode\\cli\\plugins\\cache\\zcode-plugins-official\\browser-use\\0.4.2\\skills\\web-gui-tester\\SKILL.md",
+          "C:\\Users\\carlo\\.zcode\\cli\\plugins\\cache\\zcode-plugins-official\\browser-use\\0.5.1\\skills\\web-gui-tester\\SKILL.md"
+        ]
+      }
+    ]
+  },
+  "crossVolume": {
+    "target": "F:\\Coding\\skill-hub\\.skillhub\\acceptance-E1epBu\\cross-target",
+    "backups": "C:\\Users\\carlo\\AppData\\Local\\Temp\\skillhub-cross-volume-JR7MJ8"
+  }
+}

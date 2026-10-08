@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { detectCollisions } from "@skillhub/core";
 import { Badge, Bar, Card, Mono, SectionTitle, Stat, gradeTone } from "@/components/ui";
 import { TrendChart } from "@/components/TrendChart";
 import { getScan } from "@/lib/data";
@@ -15,6 +16,7 @@ export default function EvalPage() {
   const categories = warningCategories(scan.skills);
   const maxCat = Math.max(...categories.map((c) => c.count), 1);
   const latest = evalData?.latest ?? null;
+  const collisions = detectCollisions(scan.skills);
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -219,6 +221,20 @@ export default function EvalPage() {
           </p>
         </Card>
       )}
+
+      <Card>
+        <SectionTitle hint={`${collisions.length} 组 · 描述词汇相似度 ≥35%`}>触发范围重叠提醒</SectionTitle>
+        <p className="mb-3 text-xs text-slate-500">相似描述可能竞争同一类任务。核对两份指导书的适用范围、排除条件和正反例；词汇相似度只提供排查线索。</p>
+        {collisions.length ? <div className="max-h-80 space-y-2 overflow-auto">
+          {collisions.map((pair) => <div key={`${pair.a}:${pair.b}`} className="flex flex-wrap items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs">
+            <Link href={`/skills/${encodeURIComponent(pair.a)}`} className="min-w-0 break-all text-amber-200 hover:text-amber-100">{pair.a}</Link>
+            <span className="text-slate-500">↔</span>
+            <Link href={`/skills/${encodeURIComponent(pair.b)}`} className="min-w-0 break-all text-amber-200 hover:text-amber-100">{pair.b}</Link>
+            <Badge tone="amber">描述相似 {Math.round(pair.jaccard * 100)}%</Badge>
+            <p className="w-full break-all text-slate-500">共享词：{pair.sharedTerms.join("、")}</p>
+          </div>)}
+        </div> : <p className="text-xs text-slate-400">当前库存未发现达到阈值的重叠组合。</p>}
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

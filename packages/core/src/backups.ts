@@ -11,15 +11,18 @@ export interface SkillBackup {
   replacementHash: string;
 }
 
-export function listBackups(root: string): SkillBackup[] {
+export function listBackups(root: string, recoveryErrors: string[] = []): SkillBackup[] {
   if (!fs.existsSync(root)) return [];
   const backups: SkillBackup[] = [];
   for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
     if (!entry.isDirectory() || !/^[a-f0-9-]{36}$/.test(entry.name)) continue;
     const file = path.join(root, entry.name, "backup.json");
     if (!fs.existsSync(file)) continue;
-    const backup = JSON.parse(fs.readFileSync(file, "utf8")) as SkillBackup;
-    if (backup.id === entry.name && typeof backup.targetPath === "string" && typeof backup.originalHash === "string" && typeof backup.replacementHash === "string") backups.push(backup);
+    try {
+      const backup = JSON.parse(fs.readFileSync(file, "utf8")) as SkillBackup;
+      if (!backup || backup.id !== entry.name || typeof backup.createdAt !== "string" || !Number.isFinite(Date.parse(backup.createdAt)) || typeof backup.targetPath !== "string" || !path.isAbsolute(backup.targetPath) || typeof backup.originalHash !== "string" || typeof backup.replacementHash !== "string") throw new Error("无效备份结构");
+      backups.push(backup);
+    } catch { recoveryErrors.push(`备份清单损坏，已保留原文件：${entry.name}/backup.json`); }
   }
   return backups.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
@@ -57,7 +60,10 @@ export function replaceSkillDirectory(source: string, target: string, backupRoot
   }
   try {
     fs.renameSync(stage, target);
-    if (metadata && backupDir) fs.writeFileSync(path.join(backupDir, "backup.json"), JSON.stringify(metadata, null, 2) + "\n", "utf8");
+    if (metadata && backupDir) {
+      fs.writeFileSync(path.join(backupDir, "backup.pending"), JSON.stringify(metadata, null, 2) + "\n", "utf8");
+      fs.renameSync(path.join(backupDir, "backup.pending"), path.join(backupDir, "backup.json"));
+    }
   } catch (error) {
     if (original) {
       if (fs.existsSync(target)) fs.renameSync(target, stage);
@@ -68,7 +74,7 @@ export function replaceSkillDirectory(source: string, target: string, backupRoot
   return { backupId, filesCopied: snapshotDirectory(target).files.length };
 }
 
-export function restoreSkillBackup(root: string, id: string, allowedRoots: string[], expectedCurrentHash?: string): { targetPath: string; backupId?: string } {
+export function restoreSkillBackup(root: string, id: string, allowedRoots: string[], expectedCurrentHash?: string | null): { targetPath: string; backupId?: string } {
   if (!/^[a-f0-9-]{36}$/.test(id)) throw new Error("无效备份编号");
   const backup = listBackups(root).find((b) => b.id === id);
   if (!backup) throw new Error("找不到备份");
@@ -76,7 +82,7 @@ export function restoreSkillBackup(root: string, id: string, allowedRoots: strin
   if (!allowedRoots.some((allowed) => target.startsWith(path.resolve(allowed) + path.sep))) throw new Error("备份目标不在允许的 skill 目录内");
   const original = path.join(root, id, "skill");
   if (snapshotDirectory(original).hash !== backup.originalHash) throw new Error("备份内容已变化，拒绝恢复");
-  const expected = expectedCurrentHash ?? backup.replacementHash;
+  const expected = expectedCurrentHash === undefined ? backup.replacementHash : expectedCurrentHash;
   const current = fs.existsSync(target) ? snapshotDirectory(target).hash : null;
   if (current !== expected) throw new Error("当前内容已变化，请检查差异后重新恢复");
   const result = replaceSkillDirectory(original, target, root, current);

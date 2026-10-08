@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import http from "node:http";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { defaultRoots, scanAll } from "@skillhub/core";
 import { EvalTaskRunner, validateApiUrl, type EvalTask } from "./runner.js";
 import { buildJobs } from "./jobs.js";
@@ -13,6 +13,7 @@ import type { Scenario } from "./types.js";
 const dirs: string[] = [];
 const servers: http.Server[] = [];
 afterEach(async () => {
+  vi.restoreAllMocks();
   for (const server of servers.splice(0)) { server.closeAllConnections(); await new Promise<void>((resolve) => server.close(() => resolve())); }
   for (const dir of dirs.splice(0)) fs.rmSync(dir, { recursive: true, force: true });
 });
@@ -49,6 +50,28 @@ function modelResponse(data: { messages: Array<{ content: string }> }, response:
 }
 
 describe("评测跑批状态与协议", () => {
+  it("首次持久化失败不留下无法取消或重试的运行中任务", () => {
+    const { runner, jobs } = fixture();
+    vi.spyOn(fs, "writeFileSync").mockImplementation(() => { throw new Error("fixture disk EIO private-test-key"); });
+    expect(() => runner.start({ jobs, backend: "api", model: "fixture", apiKey: "private-test-key" })).toThrow(/持久化失败/);
+    expect(runner.list()).toHaveLength(0);
+    vi.restoreAllMocks();
+    expect(runner.start({ jobs, backend: "zcode", model: "fixture" }).status).toBe("awaiting-results");
+  });
+  it("持续写盘失败保留内存失败状态，不产生未处理 rejection", async () => {
+    const { runner, root, jobs } = fixture();
+    const api = await provider((_index, data, response) => modelResponse(data, response));
+    const task = runner.start({ jobs, backend: "api", model: "fixture", baseUrl: api.url, apiKey: "private-test-key" });
+    const write = fs.writeFileSync.bind(fs);
+    vi.spyOn(fs, "writeFileSync").mockImplementation((file, data, options) => {
+      if (path.dirname(String(file)) === root) throw Object.assign(new Error("fixture disk EIO private-test-key"), { code: "EIO" });
+      write(file, data, options);
+    });
+    await expect(runner.wait(task.id)).resolves.toMatchObject({ status: "failed" });
+    expect(runner.get(task.id).error).toContain("持久化失败");
+    expect(runner.get(task.id).error).not.toContain("private-test-key");
+    await new Promise((resolve) => setImmediate(resolve));
+  });
   it("真实 HTTP 请求、逐条进度、报告入库回调和失败重试；不会保存凭据", async () => {
     const { runner, root, jobs, saved } = fixture();
     const api = await provider((index, data, response) => { if (index === 2) { response.statusCode = 429; response.end("limited"); } else modelResponse(data, response); });
