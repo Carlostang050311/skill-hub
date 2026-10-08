@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-08T07:26:35.639Z",
+  "records": 317,
+  "uniqueNames": 183,
+  "duplicateGroups": 83,
+  "drift": 8,
+  "warnings": 233,
+  "repeatedScans": [
+    {
+      "records": 317,
+      "failed": 3
+    },
+    {
+      "records": 317,
+      "failed": 3
+    },
+    {
+      "records": 317,
+      "failed": 3
+    }
+  ],
+  "failures": [
+    {
+      "path": "C:\\Users\\carlo\\.zcode\\cli\\plugins\\cache\\zcode-plugins-official\\browser-use\\0.3.1\\skills\\web-gui-tester\\SKILL.md",
+      "error": "incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line at line 3, column 149:\n     ... rely GUI-based, black-box manner: simulate real user clicks, tex ... \n                                         ^"
+    },
+    {
+      "path": "C:\\Users\\carlo\\.zcode\\cli\\plugins\\cache\\zcode-plugins-official\\browser-use\\0.4.2\\skills\\web-gui-tester\\SKILL.md",
+      "error": "incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line at line 3, column 149:\n     ... rely GUI-based, black-box manner: simulate real user clicks, tex ... \n                                         ^"
+    },
+    {
+      "path": "C:\\Users\\carlo\\.zcode\\cli\\plugins\\cache\\zcode-plugins-official\\browser-use\\0.5.1\\skills\\web-gui-tester\\SKILL.md",
+      "error": "incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line at line 3, column 149:\n     ... rely GUI-based, black-box manner: simulate real user clicks, tex ... \n                                         ^"
+    }
+  ]
+}

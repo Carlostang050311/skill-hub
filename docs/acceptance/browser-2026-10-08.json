@@ -1,0 +1,99 @@
+{
+  "date": "2026-10-08",
+  "browser": "Microsoft Edge / Playwright",
+  "scope": "Real inventory read-only rendering; isolated home mutations; local HTTP protocol fixture, not model quality",
+  "checks": [
+    "真实库存 8 页面 × 桌面/移动端渲染、无页面溢出",
+    "CLI / MCP stdio / Web 推荐身份、分数、理由一致与真实界面提交",
+    "同步逐文件预览无写入 → 应用备份 → Web 恢复完整旧资源",
+    "修复副本预览与备份 → 同副本复测 → 绑定版本对比 → HTML/Markdown 导出（协议夹具）",
+    "API HTTP 429 明确失败与重试、在途请求取消（协议夹具）",
+    "ZCode JSONL 作业下载与导入、本地正反例保存与重新生成",
+    "真实 Windows 跨盘备份与恢复",
+    "真实 CLI 执行产物 JSON 检查、入库指纹绑定与资源改动后的 stale 展示",
+    "全部浏览器操作无 console error / pageerror"
+  ],
+  "pages": [
+    {
+      "device": "desktop",
+      "route": "/",
+      "screenshot": "desktop-overview.png"
+    },
+    {
+      "device": "desktop",
+      "route": "/skills",
+      "screenshot": "desktop-skills.png"
+    },
+    {
+      "device": "desktop",
+      "route": "/skills/pdf",
+      "screenshot": "desktop-skills-pdf.png"
+    },
+    {
+      "device": "desktop",
+      "route": "/graph",
+      "screenshot": "desktop-graph.png"
+    },
+    {
+      "device": "desktop",
+      "route": "/sync",
+      "screenshot": "desktop-sync.png"
+    },
+    {
+      "device": "desktop",
+      "route": "/eval",
+      "screenshot": "desktop-eval.png"
+    },
+    {
+      "device": "desktop",
+      "route": "/workbench",
+      "screenshot": "desktop-workbench.png"
+    },
+    {
+      "device": "desktop",
+      "route": "/kits",
+      "screenshot": "desktop-kits.png"
+    },
+    {
+      "device": "mobile",
+      "route": "/",
+      "screenshot": "mobile-overview.png"
+    },
+    {
+      "device": "mobile",
+      "route": "/skills",
+      "screenshot": "mobile-skills.png"
+    },
+    {
+      "device": "mobile",
+      "route": "/skills/pdf",
+      "screenshot": "mobile-skills-pdf.png"
+    },
+    {
+      "device": "mobile",
+      "route": "/graph",
+      "screenshot": "mobile-graph.png"
+    },
+    {
+      "device": "mobile",
+      "route": "/sync",
+      "screenshot": "mobile-sync.png"
+    },
+    {
+      "device": "mobile",
+      "route": "/eval",
+      "screenshot": "mobile-eval.png"
+    },
+    {
+      "device": "mobile",
+      "route": "/workbench",
+      "screenshot": "mobile-workbench.png"
+    },
+    {
+      "device": "mobile",
+      "route": "/kits",
+      "screenshot": "mobile-kits.png"
+    }
+  ],
+  "errors": []
+}

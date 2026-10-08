@@ -76,6 +76,7 @@ function gradePill(v) {
 }
 function execCell(e) {
   if (!e) return '<span class="pill n">未执行</span>';
+  if (!e.verified) return `<span class="pill n">历史 ${fmt(e.score)}%</span> <span style="color:#64748b">程序验收未记录</span>`;
   const cls = e.score >= 90 ? "g" : e.score >= 60 ? "y" : "r";
   return `<span class="pill ${cls}">${e.score}%</span> <span style="color:#64748b">${e.passed}/${e.total}</span>`;
 }
@@ -90,7 +91,7 @@ function render() {
   });
   $("#rows").innerHTML = rows.map((s) => `<tr>
     <td><a href="/skills#${esc(s.name)}" title="skill 详情">${esc(s.name)}</a></td>
-    <td class="num">${fmt(s.overall)} ${gradePill(s.overall)}</td>
+    <td class="num">${fmt(s.overall)} ${s.status === "complete" && s.skillHash ? gradePill(s.overall) : '<span class="pill n">' + (s.status === "incomplete" ? "未完成" : s.status === "stale" ? "版本变化" : "历史版本未绑定") + '</span>'}</td>
     <td class="num">${s.trigger == null ? "—" : fmt(s.trigger) + "%"}</td>
     <td class="num">${fmt(s.clarity)}</td>
     <td class="num">${fmt(s.staticScore)}</td>
@@ -107,11 +108,12 @@ $("#q").addEventListener("input", render);
 fetch("data.json").then((r) => r.json()).then((d) => {
   DATA = d;
   const withModel = d.skills.filter((s) => s.overall != null);
-  const avg = Math.round(withModel.reduce((n, s) => n + s.overall, 0) / (withModel.length || 1));
+  const verified = withModel.filter((s) => s.status === "complete" && s.skillHash);
+  const avg = verified.length ? Math.round(verified.reduce((n, s) => n + s.overall, 0) / verified.length) : "—";
   $("#cards").innerHTML = [
     ["上榜 skill", d.skills.length],
-    ["有模型评测", withModel.length],
-    ["平均 overall", avg],
+    ["有历史模型评分", withModel.length],
+    ["完整且绑定版本的平均分", avg],
     ["评测 run 数", d.runs.length],
   ].map(([k, v]) => `<div class="card"><div class="k">${k}</div><div class="v">${v}</div></div>`).join("");
   $("#gen").textContent = new Date(d.generatedAt).toLocaleString("zh-CN");
