@@ -114,6 +114,8 @@ npm run skillhub -- recommend "把这篇文章做成小红书图文卡片"   # C
 
 ## 架构
 
+当前架构审查、领域模型、评测契约和威胁边界见：[2026-10-23 审查与路线](docs/review-2026-10-23.md)、[领域模型](docs/domain-model.md)、[评测契约](docs/evaluation-contract.md)、[威胁模型](docs/threat-model.md)。这些文档区分了已验证能力、历史证据和下一阶段计划。
+
 npm workspaces monorepo，TypeScript 全栈：
 
 ```
