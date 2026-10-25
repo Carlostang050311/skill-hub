@@ -119,6 +119,8 @@ npm run skillhub -- recommend "把这篇文章做成小红书图文卡片"   # C
 npm workspaces monorepo，TypeScript 全栈：
 
 ```
+
+packages/storage 共享库存快照（inventory.db）与 schema migrations
 packages/core   索引/解析/指纹/质量信号/图谱/分发/GitHub/推荐
 packages/cli    skillhub 命令行
 packages/mcp    MCP server（recommend_skills / get_skill / library_stats）

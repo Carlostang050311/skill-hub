@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { installSkill, isTargetKind, previewInstall } from "@skillhub/core";
-import { getScan } from "@/lib/data";
+import { getScan, refreshInventory } from "@/lib/data";
 import { skillhubHome } from "@/lib/paths";
 import { checkMutationOrigin } from "@/lib/mutations";
 
@@ -40,6 +40,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       expectedSourceHash: body.expectedSourceHash,
       expectedTargetHash: body.expectedTargetHash,
     });
+    if (!result.dryRun) refreshInventory();
     return NextResponse.json(result);
   } catch (err) {
     return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 400 });

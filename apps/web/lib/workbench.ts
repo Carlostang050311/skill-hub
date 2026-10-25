@@ -1,8 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
-import { defaultRoots, hashContent, scanAll, type SkillRecord } from "@skillhub/core";
+import { hashContent, type SkillRecord } from "@skillhub/core";
 import { EvalTaskRunner, insertRun, parseScenarioYaml, openDb, scoreRun, type EvalTask, type Scenario } from "@skillhub/eval";
-import { projectRoot, skillhubHome, stateRoot } from "./paths";
+import { projectRoot, stateRoot } from "./paths";
+import { getInventory } from "./data";
 import { reportStatus } from "./report-status";
 
 export interface ScenarioChoice { key: string; scenario: Scenario }
@@ -55,7 +56,7 @@ export function evalRunner(): EvalTaskRunner {
         const selected = candidates.find((c) => hashContent(JSON.stringify(c.scenario)) === expectedHash) ?? candidates[0];
         return selected ? [selected.scenario] : [];
       });
-      return scoreRun(scenarios, scanAll(defaultRoots(skillhubHome())).skills, task.jobs, task.results, task.createdAt, task.backend, task.model);
+      return scoreRun(scenarios, getInventory().result.skills, task.jobs, task.results, task.createdAt, task.backend, task.model);
     }, (report) => {
       const db = openDb(path.join(stateRoot(), "eval.db"));
       try { insertRun(db, report); } finally { db.close(); }

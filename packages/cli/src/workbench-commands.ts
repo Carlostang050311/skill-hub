@@ -2,11 +2,12 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { Command } from "commander";
-import { applySkillEdit, defaultRoots, listBackups, previewInstall, previewSkillEdit, resolveSource, restoreSkillBackup, scanAll, SKILL_PACKS, skillUsageCard, isTargetKind } from "@skillhub/core";
+import { applySkillEdit, defaultRoots, listBackups, previewInstall, previewSkillEdit, resolveSource, restoreSkillBackup, SKILL_PACKS, skillUsageCard, isTargetKind } from "@skillhub/core";
+import { inventoryDbPath, readInventory } from "@skillhub/storage";
 
 export function registerWorkbenchCommands(program: Command): void {
   const getHome = (home?: string) => home ?? process.env.SKILLHUB_HOME ?? os.homedir();
-  const records = (home?: string) => scanAll(defaultRoots(getHome(home))).skills;
+  const records = (home?: string) => readInventory(defaultRoots(getHome(home)), inventoryDbPath(getHome(home)), { refresh: true }).result.skills;
   const print = (data: unknown) => console.log(JSON.stringify(data, null, 2));
   program.command("diff <name>").description("预览完整目录同步差异，不写入文件")
     .requiredOption("--to <kind>", "agents / claude / codex").option("--from <kind>", "指定来源").option("--home <dir>", "覆盖用户主目录").option("--json", "JSON 输出")

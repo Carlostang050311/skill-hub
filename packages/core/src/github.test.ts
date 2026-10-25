@@ -76,7 +76,7 @@ describe("syncRepoCache + discoverSkills + install（端到端）", () => {
     expect(alpha?.relativeId).toBe("");
 
     // 3. 安装到目标目录
-    const install = installSkill(records, "alpha", { to: { dir: skillsDir } });
+    const install = installSkill(records, "alpha", { to: { dir: skillsDir }, backupRoot: path.join(base, "backups") });
     expect(install.status).toBe("installed");
     const installedDir = path.join(skillsDir, "alpha");
     expect(hashDir(installedDir)).toBe(hashDir(alpha.skillDir));
@@ -107,7 +107,7 @@ describe("syncRepoCache + discoverSkills + install（端到端）", () => {
     expect(hashDir(fresh?.skillDir ?? "")).not.toBe(hashDir(installedDir));
 
     // 7. 应用更新
-    const update = installSkill(discoverSkills(second.dir), "alpha", { to: { dir: skillsDir }, force: true });
+    const update = installSkill(discoverSkills(second.dir), "alpha", { to: { dir: skillsDir }, force: true, backupRoot: path.join(base, "backups") });
     expect(update.status).toBe("installed");
     expect(fs.readFileSync(path.join(installedDir, "scripts", "extra.py"), "utf8")).toBe("print('v2')");
     expect(hashDir(installedDir)).toBe(hashDir(fresh.skillDir));

@@ -5,6 +5,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@skillhub/core": fileURLToPath(new URL("./packages/core/src/index.ts", import.meta.url)),
+      "@skillhub/storage": fileURLToPath(new URL("./packages/storage/src/index.ts", import.meta.url)),
     },
   },
   test: {

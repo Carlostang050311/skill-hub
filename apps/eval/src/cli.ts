@@ -4,7 +4,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { defaultRoots, hashContent, scanAll } from "@skillhub/core";
+import { defaultRoots, hashContent } from "@skillhub/core";
+import { inventoryDbPath, readInventory } from "@skillhub/storage";
 import { insertRun, getRunReport, latestRun, listRuns, openDb } from "./db.js";
 import { ensureSandbox, execBindingStatus, listSandboxFiles, parseExecReport, parseExecSpec, renderExecutorPrompt, renderJudgePrompt, scoreExec, type ExecBinding, type ExecSpec } from "./exec.js";
 import { buildGenChunks, parseGenResults, renderGenPrompt, scenarioToYaml, toGenItems, uncoveredSkills, writeScenarioFile } from "./gen.js";
@@ -28,7 +29,8 @@ function defaultDbPath(): string {
 }
 
 function scanRecords(home?: string) {
-  return scanAll(defaultRoots(home)).skills;
+  const resolvedHome = home ?? process.env.SKILLHUB_HOME ?? os.homedir();
+  return readInventory(defaultRoots(resolvedHome), inventoryDbPath(resolvedHome), { refresh: true }).result.skills;
 }
 
 function printJson(data: unknown): void {

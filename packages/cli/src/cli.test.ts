@@ -109,6 +109,14 @@ describe("CLI", () => {
     expect(text).toContain("内容漂移的同名 skill：alpha");
   });
 
+  it("scan JSON 返回 scanRunId，并写入隔离库存数据库", async () => {
+    writeFixture();
+    const result = await runJson(["scan"]) as { scanRunId: string; skills: unknown[] };
+    expect(result.scanRunId).toMatch(/^[a-f0-9-]{36}$/);
+    expect(result.skills).toHaveLength(3);
+    expect(fs.existsSync(path.join(home, ".skillhub", "inventory.db"))).toBe(true);
+  });
+
   it("roots 列出目录与计数", async () => {
     writeFixture();
     const roots = (await runJson(["roots"])) as Array<{ source: string; count: number; exists: boolean }>;

@@ -3,6 +3,7 @@ import path from "node:path";
 import { NextResponse } from "next/server";
 import { compareDirectories, defaultRoots, listBackups, restoreSkillBackup, snapshotDirectory } from "@skillhub/core";
 import { skillhubHome, stateRoot } from "@/lib/paths";
+import { refreshInventory } from "@/lib/data";
 import { checkMutationOrigin } from "@/lib/mutations";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,8 @@ export async function POST(req: Request): Promise<Response> {
     checkMutationOrigin(req);
     const body = await req.json() as { id?: string; expectedCurrentHash?: string | null };
     if (typeof body.id !== "string" || (typeof body.expectedCurrentHash !== "string" && body.expectedCurrentHash !== null)) throw new Error("恢复需要备份编号与预览中的当前指纹");
-    return NextResponse.json(restoreSkillBackup(root(), body.id, allowed(), body.expectedCurrentHash));
+    const result = restoreSkillBackup(root(), body.id, allowed(), body.expectedCurrentHash);
+    refreshInventory();
+    return NextResponse.json(result);
   } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "备份恢复失败" }, { status: 400 }); }
 }

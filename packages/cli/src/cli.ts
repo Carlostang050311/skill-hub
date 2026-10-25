@@ -20,7 +20,6 @@ import {
   parseSkillSource,
   recommendSkills,
   recordOrigin,
-  scanAll,
   syncRepoCache,
   targetDirFor,
   uninstallSkill,
@@ -28,6 +27,7 @@ import {
   type SkillRecord,
   type TargetKind,
 } from "@skillhub/core";
+import { inventoryDbPath, readInventory, type StoredScan } from "@skillhub/storage";
 import { parseSkillsFindOutput } from "./find-parse.js";
 
 const VERSION = "0.1.0";
@@ -97,6 +97,15 @@ function printJson(data: unknown): void {
   console.log(JSON.stringify(data, null, 2));
 }
 
+function homeFor(value?: string): string {
+  return value ?? process.env.SKILLHUB_HOME ?? os.homedir();
+}
+
+/** 入口统一经过库存层；refresh 保持现有命令的实时扫描语义，同时留下可复用 scanRunId。 */
+function storedScan(roots: ScanRoot[], home?: string): StoredScan {
+  return readInventory(roots, inventoryDbPath(homeFor(home)), { refresh: true });
+}
+
 export async function main(argv: string[]): Promise<void> {
   const program = new Command();
   program.name("skillhub").description("本地 Agent Skill 库管理与评测平台").version(VERSION);
@@ -106,10 +115,11 @@ export async function main(argv: string[]): Promise<void> {
   addGlobal(scan);
   scan.option("--out <file>", "把完整扫描结果写入 JSON 文件");
   scan.action((opts: GlobalOpts & { out?: string }) => {
-    const result = scanAll(resolveRoots(opts));
+    const stored = storedScan(resolveRoots(opts), opts.home);
+    const result = stored.result;
     if (opts.out) fs.writeFileSync(opts.out, JSON.stringify(result, null, 2), "utf8");
     if (opts.json) {
-      printJson({ scannedAt: result.scannedAt, roots: result.roots, skills: result.skills.map(toSummary) });
+      printJson({ scanRunId: stored.scanRunId, scannedAt: result.scannedAt, roots: result.roots, skills: result.skills.map(toSummary) });
       return;
     }
     const conflicts = findConflicts(result.skills);
@@ -131,7 +141,7 @@ export async function main(argv: string[]): Promise<void> {
   addGlobal(list);
   list.option("--source <name>", "只看某个来源");
   list.action((opts: GlobalOpts & { source?: string }) => {
-    const result = scanAll(resolveRoots(opts));
+    const result = storedScan(resolveRoots(opts), opts.home).result;
     const skills = result.skills
       .filter((s) => !opts.source || s.source === opts.source)
       .sort((a, b) => a.name.localeCompare(b.name));
@@ -155,7 +165,7 @@ export async function main(argv: string[]): Promise<void> {
   const search = program.command("search <query>").description("按名称和描述搜索 skill");
   addGlobal(search);
   search.action((query: string, opts: GlobalOpts) => {
-    const result = scanAll(resolveRoots(opts));
+    const result = storedScan(resolveRoots(opts), opts.home).result;
     const q = query.toLowerCase();
     const hits = result.skills
       .map((s) => {
@@ -185,7 +195,7 @@ export async function main(argv: string[]): Promise<void> {
   addGlobal(show);
   show.option("--no-body", "不输出正文");
   show.action((name: string, opts: GlobalOpts & { body: boolean }) => {
-    const result = scanAll(resolveRoots(opts));
+    const result = storedScan(resolveRoots(opts), opts.home).result;
     const hits = result.skills.filter((s) => s.name === name).sort((a, b) => a.source.localeCompare(b.source));
     if (hits.length === 0) {
       console.error(`找不到名为 ${name} 的 skill，先用 skillhub search 查一下`);
@@ -225,7 +235,7 @@ export async function main(argv: string[]): Promise<void> {
   const rootsCmd = program.command("roots").description("列出扫描目录与各自的 skill 数");
   addGlobal(rootsCmd);
   rootsCmd.action((opts: GlobalOpts) => {
-    const result = scanAll(resolveRoots(opts));
+    const result = storedScan(resolveRoots(opts), opts.home).result;
     if (opts.json) {
       printJson(result.roots);
       return;
@@ -245,7 +255,7 @@ export async function main(argv: string[]): Promise<void> {
     .option("--json", "JSON 输出");
   install.action((name: string, opts: { to: string; from?: string; force?: boolean; dryRun?: boolean; home?: string; json?: boolean }) => {
     const to = resolveTarget(opts.to, opts.home);
-    const result = installSkill(scanAll(defaultRoots(opts.home)).skills, name, {
+    const result = installSkill(storedScan(defaultRoots(homeFor(opts.home)), opts.home).result.skills, name, {
       to, from: opts.from, force: opts.force, dryRun: opts.dryRun, home: opts.home,
     });
     if (opts.json) {
@@ -275,7 +285,7 @@ export async function main(argv: string[]): Promise<void> {
       process.exitCode = 1;
       return;
     }
-    const removed = uninstallSkill(scanAll(defaultRoots(opts.home)).skills, name, opts.from, opts.home);
+    const removed = uninstallSkill(storedScan(defaultRoots(homeFor(opts.home)), opts.home).result.skills, name, opts.from, opts.home);
     if (opts.json) {
       printJson({ name, from: opts.from, removed });
       return;
@@ -286,7 +296,7 @@ export async function main(argv: string[]): Promise<void> {
   const outdated = program.command("outdated").description("同名多副本的内容漂移与落后检测");
   outdated.option("--home <dir>", "覆盖用户主目录").option("--json", "JSON 输出");
   outdated.action((opts: { home?: string; json?: boolean }) => {
-    const entries = outdatedReport(scanAll(defaultRoots(opts.home)).skills);
+    const entries = outdatedReport(storedScan(defaultRoots(homeFor(opts.home)), opts.home).result.skills);
     if (opts.json) {
       printJson(entries);
       return;
@@ -308,7 +318,7 @@ export async function main(argv: string[]): Promise<void> {
   const pack = program.command("pack <name>").description("导出可发布包（干净目录 + manifest，推 Git 仓库即可被 skills.sh 索引）");
   pack.option("--out <dir>", "输出根目录", "dist").option("--home <dir>", "覆盖用户主目录").option("--json", "JSON 输出");
   pack.action((name: string, opts: { out: string; home?: string; json?: boolean }) => {
-    const result = packSkill(scanAll(defaultRoots(opts.home)).skills, name, opts.out);
+    const result = packSkill(storedScan(defaultRoots(homeFor(opts.home)), opts.home).result.skills, name, opts.out);
     if (opts.json) {
       printJson(result);
       return;
@@ -417,7 +427,7 @@ export async function main(argv: string[]): Promise<void> {
     .option("--path <rel>", "skill 在仓库内的相对目录（默认取目录名）")
     .option("--home <dir>", "覆盖用户主目录")
     .action((name: string, ownerRepo: string, opts: { path?: string; home?: string }) => {
-      const records = scanAll(defaultRoots(opts.home)).skills;
+      const records = storedScan(defaultRoots(homeFor(opts.home)), opts.home).result.skills;
       const record = records.filter((r) => r.name === name).sort((a, b) => a.source.localeCompare(b.source))[0];
       if (!record) {
         console.error(`本地库找不到 skill：${name}`);
@@ -513,7 +523,7 @@ export async function main(argv: string[]): Promise<void> {
   const recommend = program.command("recommend <task...>").description("按任务描述推荐最合适的 skill（供人或 agent 查库）");
   recommend.option("--limit <n>", "返回条数", "5").option("--client <name>", "按声明的客户端兼容性筛选").option("--with-body", "附带命中的 SKILL.md 正文（供 hook 预取）").option("--home <dir>", "覆盖用户主目录").option("--json", "JSON 输出");
   recommend.action((task: string[], opts: { limit: string; client?: string; withBody?: boolean; home?: string; json?: boolean }) => {
-    const records = scanAll(defaultRoots(opts.home)).skills;
+    const records = storedScan(defaultRoots(homeFor(opts.home)), opts.home).result.skills;
     const recs = recommendSkills(records, task.join(" "), Number(opts.limit) || 5, { client: opts.client });
     if (opts.withBody && recs.length > 0) {
       const byName = new Map(records.map((r) => [r.name, r]));
@@ -545,7 +555,7 @@ export async function main(argv: string[]): Promise<void> {
   const collisionsCmd = program.command("collisions").description("触发域重叠检测：哪些 skill 在抢同一批任务");
   collisionsCmd.option("--min <jaccard>", "描述相似度阈值 0-1", "0.35").option("--home <dir>", "覆盖用户主目录").option("--json", "JSON 输出");
   collisionsCmd.action((opts: { min: string; home?: string; json?: boolean }) => {
-    const pairs = detectCollisions(scanAll(defaultRoots(opts.home)).skills, Number(opts.min) || 0.35);
+    const pairs = detectCollisions(storedScan(defaultRoots(homeFor(opts.home)), opts.home).result.skills, Number(opts.min) || 0.35);
     if (opts.json) {
       printJson(pairs);
       return;

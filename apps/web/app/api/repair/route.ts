@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { NextResponse } from "next/server";
 import { applySkillEdit, isTargetKind, previewSkillEdit, repairSuggestions } from "@skillhub/core";
-import { getScan } from "@/lib/data";
+import { getScan, refreshInventory } from "@/lib/data";
 import { stateRoot } from "@/lib/paths";
 import { checkMutationOrigin } from "@/lib/mutations";
 
@@ -22,6 +22,8 @@ export async function POST(req: Request): Promise<Response> {
     if (!record || !isTargetKind(record.source) || typeof body.raw !== "string") throw new Error("请选择可写副本并提供编辑后的指导书");
     if (body.action === "preview") return NextResponse.json(previewSkillEdit(record, body.raw));
     if (body.action !== "apply" || typeof body.expectedHash !== "string") throw new Error("应用修复需要先预览并提交内容指纹");
-    return NextResponse.json(applySkillEdit(record, body.raw, body.expectedHash, stateRoot()));
+    const result = applySkillEdit(record, body.raw, body.expectedHash, stateRoot());
+    refreshInventory();
+    return NextResponse.json(result);
   } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "修复失败" }, { status: 400 }); }
 }
