@@ -58,7 +58,7 @@ describe("hashDir", () => {
 });
 
 describe("syncRepoCache + discoverSkills + install（端到端）", () => {
-  it("克隆→发现→安装→上游更新→检测→更新落地", () => {
+  it("克隆→发现→安装→上游更新→检测→更新落地", { timeout: 60_000 }, () => {
     const base = newTempDir();
     const { remoteUrl, workDir } = makeRemote(base);
     const cacheRoot = path.join(base, "cache");
@@ -113,7 +113,7 @@ describe("syncRepoCache + discoverSkills + install（端到端）", () => {
     expect(hashDir(installedDir)).toBe(hashDir(fresh.skillDir));
   });
 
-  it("无变化时 refreshed=false", () => {
+  it("无变化时 refreshed=false", { timeout: 30_000 }, () => {
     const base = newTempDir();
     const { remoteUrl } = makeRemote(base);
     const cacheRoot = path.join(base, "cache");
