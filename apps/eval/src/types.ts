@@ -75,4 +75,8 @@ export interface RunReport {
   completedJobs?: number;
   completionRate?: number;
   errors?: number;
+  /** 评分策略版本：权重或口径变更时递增，旧报告按旧策略保留不隐式重算 */
+  strategyVersion?: number;
+  /** 本次评测绑定的 skill 快照指纹（skill 名 → SKILL.md 内容 hash）；结果只对同指纹复现有效 */
+  skillSnapshotHashes?: Record<string, string | null>;
 }

@@ -4,9 +4,9 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { defaultRoots, hashContent } from "@skillhub/core";
+import { defaultRoots, hashContent, loadTrustedSkills, trustedSkillsFile, trustSkill, untrustSkill } from "@skillhub/core";
 import { inventoryDbPath, readInventory } from "@skillhub/storage";
-import { insertRun, getRunReport, latestRun, listRuns, openDb } from "./db.js";
+import { insertRun, getRunReport, latestRun, listRuns, openDb, repeatStats, skillHistory } from "./db.js";
 import { ensureSandbox, execBindingStatus, listSandboxFiles, parseExecReport, parseExecSpec, renderExecutorPrompt, renderJudgePrompt, scoreExec, type ExecBinding, type ExecSpec } from "./exec.js";
 import { buildGenChunks, parseGenResults, renderGenPrompt, scenarioToYaml, toGenItems, uncoveredSkills, writeScenarioFile } from "./gen.js";
 import { buildJobs, parseResultsFile, pickPreferred } from "./jobs.js";
@@ -173,11 +173,26 @@ export async function main(argv: string[]): Promise<void> {
     .option("--from <source>", "评测指定来源的副本")
     .option("--names <list>", "只执行这些 skill（逗号分隔，必须带 execute 块）")
     .option("--sandbox <dir>", "沙箱根目录", ".skillhub/sandbox")
-    .option("--out <file>", "作业 JSONL 输出", ".skillhub/exec-jobs.jsonl");
-  execPlan.action((opts: { scenarios: string; names?: string; sandbox: string; out: string; home?: string; from?: string; json?: boolean }) => {
+    .option("--out <file>", "作业 JSONL 输出", ".skillhub/exec-jobs.jsonl")
+    .option("--confirm-untrusted", "明确确认本次执行不在信任名单内的 skill（不写入名单）");
+  execPlan.action((opts: { scenarios: string; names?: string; sandbox: string; out: string; home?: string; from?: string; confirmUntrusted?: boolean; json?: boolean }) => {
     const wanted = opts.names ? new Set(opts.names.split(",").map((s) => s.trim())) : null;
     const scenarios = loadScenarios(opts.scenarios).filter((s) => !wanted || wanted.has(s.skill));
     const records = pickPreferred(scanRecords(opts.home).filter((r) => !opts.from || r.source === opts.from));
+    // P0 信任门：执行级评测会让 skill 在沙箱里真实运行；不在信任名单内的 skill 需要显式确认
+    const trustedFile = trustedSkillsFile(opts.home ?? os.homedir());
+    const trusted = new Set(loadTrustedSkills(trustedFile));
+    const untrusted = scenarios
+      .filter((s) => parseExecSpec(s) && records.has(s.skill))
+      .map((s) => s.skill)
+      .filter((name) => !trusted.has(name));
+    if (untrusted.length > 0 && !opts.confirmUntrusted) {
+      console.error("以下 skill 不在信任名单内，执行级评测会让它们在沙箱里真实运行：");
+      for (const name of untrusted) console.error(`  - ${name}`);
+      console.error("确认无误后加 --confirm-untrusted 本次放行；或用 skillhub-eval trust add <name> 永久信任。");
+      process.exitCode = 1;
+      return;
+    }
     const jobs: Array<Record<string, unknown>> = [];
     const skipped: string[] = [];
     for (const scenario of scenarios) {
@@ -210,6 +225,31 @@ export async function main(argv: string[]): Promise<void> {
     console.log(`生成 ${jobs.length} 个执行作业 → ${opts.out}`);
     if (skipped.length > 0) console.log(`跳过（库中不存在）：${skipped.join(", ")}`);
   });
+
+  const trust = program.command("trust").description("执行级评测的信任名单管理");
+  trust.option("--home <dir>", "覆盖用户主目录").option("--json", "JSON 输出");
+  trust.action((opts: { home?: string; json?: boolean }) => {
+    const names = loadTrustedSkills(trustedSkillsFile(opts.home ?? os.homedir()));
+    if (opts.json) {
+      printJson(names);
+      return;
+    }
+    console.log(names.length === 0 ? "信任名单为空：exec plan 需要 --confirm-untrusted 逐次放行" : names.map((n) => `- ${n}`).join("\n"));
+  });
+  trust
+    .command("add <name>")
+    .description("把 skill 加入信任名单")
+    .option("--home <dir>", "覆盖用户主目录")
+    .action((name: string, opts: { home?: string }) => {
+      console.log(trustSkill(trustedSkillsFile(opts.home ?? os.homedir()), name) ? `已信任：${name}` : `已在名单内：${name}`);
+    });
+  trust
+    .command("remove <name>")
+    .description("从信任名单移除")
+    .option("--home <dir>", "覆盖用户主目录")
+    .action((name: string, opts: { home?: string }) => {
+      console.log(untrustSkill(trustedSkillsFile(opts.home ?? os.homedir()), name) ? `已移除：${name}` : `不在名单内：${name}`);
+    });
 
   const execJudge = exec.command("judge").description("根据执行者结果构建评审作业（复核 rubric）");
   addExecGlobal(execJudge);
@@ -384,6 +424,36 @@ export async function main(argv: string[]): Promise<void> {
       fs.mkdirSync(path.dirname(opts.out), { recursive: true });
       fs.writeFileSync(opts.out, JSON.stringify(data, null, 2) + "\n", "utf8");
       console.log(`质量榜数据已导出：${opts.out}（${data.skills.length} 个 skill，${data.runs.length} 个 run）`);
+    } finally {
+      db.close();
+    }
+  });
+
+  const statsCmd = program.command("stats <skill>").description("某 skill 的评测历史与同指纹重复运行稳定性");
+  addGlobal(statsCmd);
+  statsCmd.action((skill: string, opts: { db: string; json?: boolean }) => {
+    const db = openDb(opts.db);
+    try {
+      const history = skillHistory(db, skill);
+      const repeat = repeatStats(history);
+      if (opts.json) {
+        printJson({ skill, history, repeat });
+        return;
+      }
+      if (history.length === 0) {
+        console.log(`${skill} 没有已入库的评测记录`);
+        return;
+      }
+      console.log(`${skill} 的评测历史（${history.length} 次）：`);
+      for (const h of history) {
+        console.log(`  run #${h.runId}  ${h.startedAt.slice(0, 16)}  overall ${h.overall}  策略 v${h.strategyVersion ?? "?"}  指纹 ${h.snapshotHash ?? "未绑定"}`);
+      }
+      if (repeat.runs > 0) {
+        console.log(`同指纹重复运行 ${repeat.runs} 次：均值 ${repeat.mean} · 标准差 ${repeat.stdDev} · 区间 [${repeat.min}, ${repeat.max}]`);
+        if (repeat.runs < 2) console.log("（同指纹只评过 1 次；同一份内容再评一次即可得到稳定性基线）");
+      } else {
+        console.log("历史记录未绑定快照指纹（旧策略版本），重复运行统计不可用");
+      }
     } finally {
       db.close();
     }

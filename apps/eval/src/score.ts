@@ -3,6 +3,8 @@ import { parseModelJson, pickPreferred } from "./jobs.js";
 import type { EvalJob, JobResult, RunReport, Scenario, SkillEvalReport } from "./types.js";
 
 const STATIC_PENALTY = 10;
+/** 评分策略版本：overall 权重（触发 40% + 清晰度 30% + 静态 30%）与判定口径的版本号；变更时递增，旧报告按旧策略保留 */
+export const EVAL_STRATEGY_VERSION = 2;
 
 function numbersOnly(values: Array<number | null>): number[] {
   const out: number[] = [];
@@ -174,5 +176,7 @@ export function scoreRun(
     completedJobs: reports.reduce((n, r) => n + (r.completedJobs ?? 0), 0),
     completionRate: reports.length ? Math.round(reports.reduce((n, r) => n + (r.completedJobs ?? 0), 0) / reports.reduce((n, r) => n + (r.expectedJobs ?? 0), 0) * 100) : 0,
     errors: reports.reduce((n, r) => n + r.errors, 0),
+    strategyVersion: EVAL_STRATEGY_VERSION,
+    skillSnapshotHashes: Object.fromEntries(reports.map((r) => [r.skill, r.skillHash ?? null])),
   };
 }

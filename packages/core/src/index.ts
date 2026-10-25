@@ -10,6 +10,7 @@ export * from "./groups.js";
 export * from "./distribute.js";
 export * from "./github.js";
 export * from "./recommend.js";
+export * from "./trust.js";
 export * from "./catalog.js";
 export * from "./repair.js";
 export * from "./collisions.js";
