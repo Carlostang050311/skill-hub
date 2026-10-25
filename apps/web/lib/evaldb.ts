@@ -30,6 +30,8 @@ export interface ExecSkillRow {
   runAt: string;
   verified: boolean;
   stale: boolean;
+  /** 是否在执行级信任名单内（exec plan 信任门用同一份名单） */
+  trusted: boolean;
 }
 
 /** 执行级评测成绩：取每个 skill 最新一次的官方分。exec ingest 按相对路径写入，位置随启动目录变化，多候选探测 */
@@ -37,8 +39,16 @@ export const getExecResults = cache((): ExecSkillRow[] => {
   const candidates = [
     path.join(stateRoot(), "exec-runs.json"),
     path.join(process.cwd(), ".skillhub", "exec-runs.json"),
-    path.join(process.cwd(), "..", "..", ".skillhub", "exec-runs.json"),
+    path.join(path.dirname(path.dirname(process.cwd())), ".skillhub", "exec-runs.json"),
   ];
+  const trustedFile = path.join(stateRoot(), "trusted-skills.json");
+  let trusted = new Set<string>();
+  try {
+    const parsed: unknown = JSON.parse(fs.readFileSync(trustedFile, "utf8"));
+    if (Array.isArray(parsed)) trusted = new Set(parsed.filter((x): x is string => typeof x === "string"));
+  } catch {
+    // 名单缺失/损坏按空处理，不影响成绩展示
+  }
   const file = (process.env.SKILLHUB_HOME ? candidates.slice(0, 1) : candidates).find((p) => fs.existsSync(p));
   if (!file) return [];
   try {
@@ -50,7 +60,16 @@ export const getExecResults = cache((): ExecSkillRow[] => {
     for (const run of runs) {
       for (const r of run.results ?? []) {
         const status = execBindingStatus(r, getScan().skills);
-        bySkill.set(r.skill, { skill: r.skill, score: r.score, passed: r.rubricPassed, total: r.rubricTotal, runAt: run.runAt, verified: status === "bound" && r.status === "bound" && Array.isArray(r.checks), stale: status === "stale" || r.status === "stale" });
+        bySkill.set(r.skill, {
+          skill: r.skill,
+          score: r.score,
+          passed: r.rubricPassed,
+          total: r.rubricTotal,
+          runAt: run.runAt,
+          verified: status === "bound" && r.status === "bound" && Array.isArray(r.checks),
+          stale: status === "stale" || r.status === "stale",
+          trusted: trusted.has(r.skill),
+        });
       }
     }
     return [...bySkill.values()].sort((a, b) => a.skill.localeCompare(b.skill));

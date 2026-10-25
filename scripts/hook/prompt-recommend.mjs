@@ -3,6 +3,7 @@
 // 输入：stdin 的 hook JSON（含 prompt/agentName/cwd 等字段）；输出：hookSpecificOutput JSON。
 // 任何内部错误都静默退出 0（空输出合法），绝不阻塞会话。
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -138,6 +139,7 @@ function main() {
     if (dedupeShouldSkip(top.name))
         return;
     recordShown(top.name);
+    logRecommendEvent(top.name, top.score, input.prompt, input.cwd);
     const second = recs[1];
     const hasSecond = second != null &&
         typeof second.name === "string" &&
@@ -161,6 +163,25 @@ function main() {
             additionalContext: context,
         },
     }));
+}
+/** 推荐事件落盘（Phase 4 反馈闭环地基）：taskHash 取任务文本前 8 位摘要，不留原文，零隐私负担 */
+function logRecommendEvent(name, score, prompt, projectDir) {
+    try {
+        const eventFile = path.join(os.homedir(), ".skillhub", "hook-events.jsonl");
+        const taskHash = createHash("sha256").update(String(prompt)).digest("hex").slice(0, 8);
+        const event = {
+            ts: new Date().toISOString(),
+            skill: name,
+            score,
+            taskHash,
+            // 项目目录名（不含完整路径）：用于区分不同项目的推荐频率，又不记录敏感路径
+            project: path.basename(projectDir || ""),
+        };
+        fs.appendFileSync(eventFile, JSON.stringify(event) + "\n", "utf8");
+    }
+    catch {
+        // 事件记录失败不影响主流程
+    }
 }
 /** 跨平台调本仓库 CLI：字面量命令 + 参数向量（node cli.js），不经过 shell */
 function spawnNpxCli(args) {

@@ -8,6 +8,7 @@ import { defaultRoots, hashContent, loadTrustedSkills, trustedSkillsFile, trustS
 import { inventoryDbPath, readInventory } from "@skillhub/storage";
 import { insertRun, getRunReport, latestRun, listRuns, openDb, repeatStats, skillHistory } from "./db.js";
 import { ensureSandbox, execBindingStatus, listSandboxFiles, parseExecReport, parseExecSpec, renderExecutorPrompt, renderJudgePrompt, scoreExec, type ExecBinding, type ExecSpec } from "./exec.js";
+import { aggregateRecommendEvents, parseRecommendEvents } from "./events.js";
 import { buildGenChunks, parseGenResults, renderGenPrompt, scenarioToYaml, toGenItems, uncoveredSkills, writeScenarioFile } from "./gen.js";
 import { buildJobs, parseResultsFile, pickPreferred } from "./jobs.js";
 import { collectLeaderboard, type ExecRunRow } from "./leaderboard.js";
@@ -401,6 +402,28 @@ export async function main(argv: string[]): Promise<void> {
     if (invalid.length > 0) {
       console.log(`无效 ${invalid.length} 条：`);
       for (const item of invalid.slice(0, 10)) console.log(`  ✗ ${item.skill}：${item.reason}`);
+    }
+  });
+
+  const recommendStats = program.command("recommend-stats").description("hook 推荐事件聚合：展示次数、任务覆盖、分数分布（Phase 4 反馈闭环的地基读数）");
+  recommendStats
+    .option("--events <file>", "hook 事件 JSONL", path.join(os.homedir(), ".skillhub", "hook-events.jsonl"))
+    .option("--json", "JSON 输出");
+  recommendStats.action((opts: { events: string; json?: boolean }) => {
+    const lines = fs.existsSync(opts.events) ? fs.readFileSync(opts.events, "utf8").split("\n") : [];
+    const summary = aggregateRecommendEvents(parseRecommendEvents(lines));
+    if (opts.json) {
+      printJson(summary);
+      return;
+    }
+    if (summary.totalEvents === 0) {
+      console.log(`还没有推荐事件（${opts.events} 不存在或为空）——hook 每次成功推荐都会追加一条`);
+      return;
+    }
+    console.log(`共 ${summary.totalEvents} 次推荐 · 覆盖 ${summary.distinctTasks} 个不同任务 · ${summary.distinctSkills} 个 skill · ${summary.days} 天`);
+    console.log("");
+    for (const s of summary.skills) {
+      console.log(`  ${s.name}  展示 ${s.shown} 次 · ${s.distinctTasks} 个任务 · ${s.projects} 个项目 · 均分 ${s.avgScore ?? "—"}`);
     }
   });
 

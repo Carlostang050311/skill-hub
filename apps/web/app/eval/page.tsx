@@ -64,6 +64,7 @@ export default function EvalPage() {
                         </span>
                       </div>
                       <p className="mt-1 text-[10px] text-slate-500">{r.stale ? "版本已变化，需要复测" : r.verified ? "已绑定版本并执行程序验收" : "历史成绩：版本或程序验收未记录"}</p>
+                      <p className={`text-[10px] ${r.trusted ? "text-emerald-500/80" : "text-amber-500/80"}`}>{r.trusted ? "信任名单内" : "未信任：复测需确认"}</p>
                     </div>
                   ))}
                 </div>
