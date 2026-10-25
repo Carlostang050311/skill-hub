@@ -66,4 +66,44 @@ describe("buildLeaderboardData", () => {
     expect(data.runs.map((r) => r.id)).toEqual([1, 4]);
     expect(data.generatedAt).toBe("t");
   });
+
+  it("指纹绑定与同指纹稳定性：最新指纹为基准，旧指纹不计入", () => {
+    const resultsWithHash = (runId: number) => {
+      if (runId === 10) {
+        return [
+          { skill: "a", overall: 98, triggerScore: 100, clarityScore: 93, staticScore: 100, skillHash: "h1", status: "complete" as const },
+        ];
+      }
+      if (runId === 11) {
+        return [
+          { skill: "a", overall: 96, triggerScore: 100, clarityScore: 91, staticScore: 100, skillHash: "h1", status: "complete" as const },
+        ];
+      }
+      if (runId === 12) {
+        // 内容更新后的新指纹
+        return [
+          { skill: "a", overall: 95, triggerScore: 100, clarityScore: 90, staticScore: 100, skillHash: "h2", status: "complete" as const },
+        ];
+      }
+      return [];
+    };
+    const meta = new Map([
+      [10, { strategyVersion: 2, snapshotHashes: { a: "h1" } }],
+      [11, { strategyVersion: 2, snapshotHashes: { a: "h1" } }],
+      [12, { strategyVersion: 2, snapshotHashes: { a: "h2" } }],
+    ]);
+    const data = buildLeaderboardData([run(10, 1, 98), run(11, 1, 96), run(12, 1, 95)], resultsWithHash, [], "t", meta);
+    const a = data.skills.find((s) => s.name === "a");
+    expect(a?.snapshotBound).toBe(true);
+    expect(a?.strategyVersion).toBe(2);
+    expect(a?.stability).toEqual({ runs: 1, stdDev: 0, mean: 95 }); // 最新指纹 h2 只评过 1 次
+  });
+
+  it("无指纹数据时 stability 为 null、snapshotBound 为 false", () => {
+    const data = buildLeaderboardData([run(1, 2, 84)], resultsFor, [], "t");
+    const a = data.skills.find((s) => s.name === "a");
+    expect(a?.snapshotBound).toBe(false);
+    expect(a?.stability).toBeNull();
+    expect(a?.strategyVersion).toBeNull();
+  });
 });

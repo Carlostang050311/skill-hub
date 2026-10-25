@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-07T05:15:54.499Z",
+  "generatedAt": "2026-10-25T07:22:23.334Z",
   "repo": "Carlostang050311/skill-hub",
   "runs": [
     {
@@ -43,51 +43,21 @@
       "startedAt": "2026-10-05T11:49:28.165Z",
       "totalSkills": 119,
       "avgOverall": 92.57142857142857
+    },
+    {
+      "id": 10,
+      "startedAt": "2026-10-25T07:08:06.028Z",
+      "totalSkills": 10,
+      "avgOverall": 92.4
+    },
+    {
+      "id": 11,
+      "startedAt": "2026-10-25T07:19:22.244Z",
+      "totalSkills": 10,
+      "avgOverall": 91.6
     }
   ],
   "skills": [
-    {
-      "name": "decision-mapping",
-      "overall": 100,
-      "trigger": null,
-      "clarity": null,
-      "staticScore": 100,
-      "lastRunId": 2,
-      "exec": {
-        "score": 100,
-        "passed": 4,
-        "total": 4,
-        "runAt": "2026-10-07T05:15:54.171Z"
-      }
-    },
-    {
-      "name": "humanizer-zh",
-      "overall": 100,
-      "trigger": 100,
-      "clarity": 100,
-      "staticScore": 100,
-      "lastRunId": 3,
-      "exec": {
-        "score": 100,
-        "passed": 4,
-        "total": 4,
-        "runAt": "2026-10-07T05:15:54.171Z"
-      }
-    },
-    {
-      "name": "tdd",
-      "overall": 100,
-      "trigger": null,
-      "clarity": null,
-      "staticScore": 100,
-      "lastRunId": 2,
-      "exec": {
-        "score": 100,
-        "passed": 4,
-        "total": 4,
-        "runAt": "2026-10-07T05:15:54.171Z"
-      }
-    },
     {
       "name": "claude-skill-creator",
       "overall": 100,
@@ -95,16 +65,11 @@
       "clarity": 100,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
-    },
-    {
-      "name": "clone-website",
-      "overall": 100,
-      "trigger": null,
-      "clarity": null,
-      "staticScore": 100,
-      "lastRunId": 2,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "domain-modeling",
@@ -113,7 +78,11 @@
       "clarity": 100,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "guizang-product-video-skill",
@@ -122,16 +91,11 @@
       "clarity": 100,
       "staticScore": 100,
       "lastRunId": 3,
-      "exec": null
-    },
-    {
-      "name": "pdf",
-      "overall": 100,
-      "trigger": null,
-      "clarity": null,
-      "staticScore": 100,
-      "lastRunId": 2,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "plugin-creator",
@@ -140,7 +104,11 @@
       "clarity": 100,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "screenshot",
@@ -149,7 +117,11 @@
       "clarity": null,
       "staticScore": 100,
       "lastRunId": 2,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "writing-shape",
@@ -158,7 +130,36 @@
       "clarity": 100,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
+    },
+    {
+      "name": "humanizer-zh",
+      "overall": 98,
+      "trigger": 100,
+      "clarity": 93,
+      "staticScore": 100,
+      "lastRunId": 11,
+      "status": "complete",
+      "skillHash": "3f8bee59ea2cc612",
+      "snapshotBound": true,
+      "strategyVersion": 2,
+      "exec": {
+        "score": 100,
+        "passed": 4,
+        "total": 4,
+        "runAt": "2026-10-07T05:15:54.171Z",
+        "verified": false,
+        "status": "unverified"
+      },
+      "stability": {
+        "runs": 2,
+        "stdDev": 1,
+        "mean": 99
+      }
     },
     {
       "name": "writing-beats",
@@ -167,12 +168,18 @@
       "clarity": 93,
       "staticScore": 100,
       "lastRunId": 9,
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
       "exec": {
         "score": 100,
         "passed": 4,
         "total": 4,
-        "runAt": "2026-10-07T05:15:54.171Z"
-      }
+        "runAt": "2026-10-07T05:15:54.171Z",
+        "verified": false,
+        "status": "unverified"
+      },
+      "stability": null
     },
     {
       "name": "claude-typer",
@@ -181,7 +188,11 @@
       "clarity": 93,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "commit",
@@ -190,7 +201,11 @@
       "clarity": 93,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "computer-use",
@@ -199,7 +214,11 @@
       "clarity": 93,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "diagnosing-bugs",
@@ -208,7 +227,11 @@
       "clarity": 93,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "guizang-ppt-skill",
@@ -217,7 +240,11 @@
       "clarity": 93,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "ios-dev",
@@ -226,7 +253,11 @@
       "clarity": 93,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "mimosa-security-scan",
@@ -235,7 +266,11 @@
       "clarity": 93,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "playwright",
@@ -244,7 +279,11 @@
       "clarity": 93,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "prototype",
@@ -253,7 +292,11 @@
       "clarity": 93,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "qa",
@@ -262,7 +305,11 @@
       "clarity": 93,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "render-deploy",
@@ -271,7 +318,11 @@
       "clarity": 93,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "secret",
@@ -280,7 +331,11 @@
       "clarity": 93,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "setup-matt-pocock-skills",
@@ -289,7 +344,11 @@
       "clarity": 93,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "subagent-driven-development",
@@ -298,7 +357,11 @@
       "clarity": 93,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "test-driven-development",
@@ -307,7 +370,11 @@
       "clarity": 93,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "triage",
@@ -316,7 +383,11 @@
       "clarity": 93,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "writing-fragments",
@@ -325,7 +396,11 @@
       "clarity": 93,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "zcode-computer-use",
@@ -334,7 +409,29 @@
       "clarity": 93,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
+    },
+    {
+      "name": "aihot",
+      "overall": 97,
+      "trigger": 100,
+      "clarity": 100,
+      "staticScore": 90,
+      "lastRunId": 11,
+      "status": "complete",
+      "skillHash": "af736cb1f397f93a",
+      "snapshotBound": true,
+      "strategyVersion": 2,
+      "exec": null,
+      "stability": {
+        "runs": 2,
+        "stdDev": 1,
+        "mean": 96
+      }
     },
     {
       "name": "diagnosing-mcp",
@@ -343,7 +440,11 @@
       "clarity": 100,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "finishing-a-development-branch",
@@ -352,7 +453,29 @@
       "clarity": 100,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
+    },
+    {
+      "name": "guizang-social-card-skill",
+      "overall": 97,
+      "trigger": 100,
+      "clarity": 100,
+      "staticScore": 90,
+      "lastRunId": 11,
+      "status": "complete",
+      "skillHash": "423b51f3e93aa524",
+      "snapshotBound": true,
+      "strategyVersion": 2,
+      "exec": null,
+      "stability": {
+        "runs": 2,
+        "stdDev": 1,
+        "mean": 96
+      }
     },
     {
       "name": "qiaomu-goal-meta-skill",
@@ -361,7 +484,11 @@
       "clarity": 100,
       "staticScore": 90,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "sora",
@@ -370,7 +497,11 @@
       "clarity": 100,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "review",
@@ -379,11 +510,42 @@
       "clarity": 87,
       "staticScore": 100,
       "lastRunId": 6,
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
       "exec": {
         "score": 100,
         "passed": 4,
         "total": 4,
-        "runAt": "2026-10-07T05:15:54.171Z"
+        "runAt": "2026-10-07T05:15:54.171Z",
+        "verified": false,
+        "status": "unverified"
+      },
+      "stability": null
+    },
+    {
+      "name": "tdd",
+      "overall": 96,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 100,
+      "lastRunId": 11,
+      "status": "complete",
+      "skillHash": "f2f8dc19c612f2f3",
+      "snapshotBound": true,
+      "strategyVersion": 2,
+      "exec": {
+        "score": 100,
+        "passed": 4,
+        "total": 4,
+        "runAt": "2026-10-07T05:15:54.171Z",
+        "verified": false,
+        "status": "unverified"
+      },
+      "stability": {
+        "runs": 2,
+        "stdDev": 1,
+        "mean": 97
       }
     },
     {
@@ -393,7 +555,11 @@
       "clarity": 87,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "design-an-interface",
@@ -402,7 +568,11 @@
       "clarity": 87,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "dispatching-parallel-agents",
@@ -411,7 +581,11 @@
       "clarity": 87,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "executing-plans",
@@ -420,7 +594,11 @@
       "clarity": 87,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "git-guardrails-claude-code",
@@ -429,7 +607,11 @@
       "clarity": 87,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "implement",
@@ -438,7 +620,11 @@
       "clarity": 87,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "improve-codebase-architecture",
@@ -447,7 +633,11 @@
       "clarity": 87,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "issue",
@@ -456,7 +646,11 @@
       "clarity": 87,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "migrate-to-shoehorn",
@@ -465,7 +659,29 @@
       "clarity": 87,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
+    },
+    {
+      "name": "pdf",
+      "overall": 96,
+      "trigger": 100,
+      "clarity": 87,
+      "staticScore": 100,
+      "lastRunId": 11,
+      "status": "complete",
+      "skillHash": "1634e19d6a5efec5",
+      "snapshotBound": true,
+      "strategyVersion": 2,
+      "exec": null,
+      "stability": {
+        "runs": 2,
+        "stdDev": 1,
+        "mean": 95
+      }
     },
     {
       "name": "pptx",
@@ -474,7 +690,11 @@
       "clarity": 87,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "pr",
@@ -483,7 +703,11 @@
       "clarity": 87,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "receiving-code-review",
@@ -492,7 +716,11 @@
       "clarity": 87,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "scaffold-exercises",
@@ -501,7 +729,11 @@
       "clarity": 87,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "setup",
@@ -510,7 +742,11 @@
       "clarity": 87,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "systematic-debugging",
@@ -519,7 +755,11 @@
       "clarity": 87,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "to-issues",
@@ -528,7 +768,11 @@
       "clarity": 87,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "ai-desk-card",
@@ -537,7 +781,11 @@
       "clarity": 93,
       "staticScore": 90,
       "lastRunId": 3,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "android-dev",
@@ -546,7 +794,11 @@
       "clarity": 93,
       "staticScore": 90,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "ayi-nonviolent-communication",
@@ -555,7 +807,11 @@
       "clarity": 93,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "control-browser",
@@ -564,7 +820,11 @@
       "clarity": 93,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "diagnosing-commands",
@@ -573,7 +833,11 @@
       "clarity": 93,
       "staticScore": 90,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "diagnosing-hooks",
@@ -582,7 +846,11 @@
       "clarity": 93,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "dynamic-workflows",
@@ -591,7 +859,11 @@
       "clarity": 93,
       "staticScore": 90,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "figma",
@@ -600,7 +872,11 @@
       "clarity": 93,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "guizang-material-illustration",
@@ -609,16 +885,11 @@
       "clarity": 93,
       "staticScore": 90,
       "lastRunId": 3,
-      "exec": null
-    },
-    {
-      "name": "guizang-social-card-skill",
-      "overall": 95,
-      "trigger": 100,
-      "clarity": 93,
-      "staticScore": 90,
-      "lastRunId": 3,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "humanizer",
@@ -627,7 +898,11 @@
       "clarity": 93,
       "staticScore": 90,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "neat-freak",
@@ -636,7 +911,11 @@
       "clarity": 93,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "obsidian-bases",
@@ -645,7 +924,11 @@
       "clarity": 93,
       "staticScore": 90,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "obsidian-cli",
@@ -654,7 +937,11 @@
       "clarity": 93,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "renwei-writing",
@@ -663,7 +950,11 @@
       "clarity": 93,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "ui-ux-pro-max",
@@ -672,7 +963,11 @@
       "clarity": 93,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "using-git-worktrees",
@@ -681,7 +976,11 @@
       "clarity": 93,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "video-shotcraft",
@@ -690,7 +989,11 @@
       "clarity": 93,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "writing-skills",
@@ -699,7 +1002,11 @@
       "clarity": 93,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "zcode-configuration-guide",
@@ -708,7 +1015,11 @@
       "clarity": 93,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "brainstorming",
@@ -717,12 +1028,18 @@
       "clarity": 80,
       "staticScore": 100,
       "lastRunId": 6,
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
       "exec": {
         "score": 100,
         "passed": 4,
         "total": 4,
-        "runAt": "2026-10-07T05:15:54.171Z"
-      }
+        "runAt": "2026-10-07T05:15:54.171Z",
+        "verified": false,
+        "status": "unverified"
+      },
+      "stability": null
     },
     {
       "name": "to-prd",
@@ -731,12 +1048,18 @@
       "clarity": 80,
       "staticScore": 100,
       "lastRunId": 9,
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
       "exec": {
         "score": 100,
         "passed": 4,
         "total": 4,
-        "runAt": "2026-10-07T05:15:54.171Z"
-      }
+        "runAt": "2026-10-07T05:15:54.171Z",
+        "verified": false,
+        "status": "unverified"
+      },
+      "stability": null
     },
     {
       "name": "writing-plans",
@@ -745,12 +1068,18 @@
       "clarity": 80,
       "staticScore": 100,
       "lastRunId": 9,
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
       "exec": {
         "score": 100,
         "passed": 4,
         "total": 4,
-        "runAt": "2026-10-07T05:15:54.171Z"
-      }
+        "runAt": "2026-10-07T05:15:54.171Z",
+        "verified": false,
+        "status": "unverified"
+      },
+      "stability": null
     },
     {
       "name": "ask-matt",
@@ -759,7 +1088,29 @@
       "clarity": 80,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
+    },
+    {
+      "name": "clone-website",
+      "overall": 94,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 100,
+      "lastRunId": 11,
+      "status": "complete",
+      "skillHash": "b61181e74884f70b",
+      "snapshotBound": true,
+      "strategyVersion": 2,
+      "exec": null,
+      "stability": {
+        "runs": 2,
+        "stdDev": 2,
+        "mean": 96
+      }
     },
     {
       "name": "codespace",
@@ -768,7 +1119,11 @@
       "clarity": 80,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "frontend-design",
@@ -777,7 +1132,11 @@
       "clarity": 80,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "gist",
@@ -786,7 +1145,11 @@
       "clarity": 80,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "grilling",
@@ -795,7 +1158,11 @@
       "clarity": 80,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "resolving-merge-conflicts",
@@ -804,7 +1171,11 @@
       "clarity": 80,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "setup-pre-commit",
@@ -813,7 +1184,11 @@
       "clarity": 80,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "skill-finder",
@@ -822,7 +1197,11 @@
       "clarity": 80,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "ubiquitous-language",
@@ -831,7 +1210,11 @@
       "clarity": 80,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "vercel-deploy",
@@ -840,7 +1223,11 @@
       "clarity": 80,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "verification-before-completion",
@@ -849,7 +1236,11 @@
       "clarity": 80,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "web-design-guidelines",
@@ -858,7 +1249,11 @@
       "clarity": 80,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "wechat-2d-render",
@@ -867,7 +1262,11 @@
       "clarity": 80,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "workflow-run",
@@ -876,7 +1275,11 @@
       "clarity": 80,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "writing-great-skills",
@@ -885,7 +1288,11 @@
       "clarity": 80,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "json-canvas",
@@ -894,12 +1301,18 @@
       "clarity": 87,
       "staticScore": 90,
       "lastRunId": 9,
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
       "exec": {
         "score": 100,
         "passed": 4,
         "total": 4,
-        "runAt": "2026-10-07T05:15:54.171Z"
-      }
+        "runAt": "2026-10-07T05:15:54.171Z",
+        "verified": false,
+        "status": "unverified"
+      },
+      "stability": null
     },
     {
       "name": "diagnosing-plugins",
@@ -908,7 +1321,11 @@
       "clarity": 87,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "diagnosing-skills",
@@ -917,7 +1334,11 @@
       "clarity": 87,
       "staticScore": 90,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "docx",
@@ -926,7 +1347,11 @@
       "clarity": 87,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "figma-implement-design",
@@ -935,7 +1360,11 @@
       "clarity": 87,
       "staticScore": 90,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "hv-analysis",
@@ -944,7 +1373,11 @@
       "clarity": 87,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "imagegen-cli",
@@ -953,7 +1386,11 @@
       "clarity": 87,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "imagegen-frontend-mobile",
@@ -962,7 +1399,11 @@
       "clarity": 87,
       "staticScore": 90,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "khazix-writer",
@@ -971,7 +1412,11 @@
       "clarity": 87,
       "staticScore": 90,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "knap",
@@ -980,7 +1425,11 @@
       "clarity": 87,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "obsidian-markdown",
@@ -989,7 +1438,11 @@
       "clarity": 87,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "redesign-existing-projects",
@@ -998,7 +1451,11 @@
       "clarity": 87,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "repo",
@@ -1007,7 +1464,11 @@
       "clarity": 87,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "storage-analyzer",
@@ -1016,7 +1477,11 @@
       "clarity": 87,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "yingzao",
@@ -1025,7 +1490,36 @@
       "clarity": 87,
       "staticScore": 90,
       "lastRunId": 3,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
+    },
+    {
+      "name": "decision-mapping",
+      "overall": 92,
+      "trigger": 100,
+      "clarity": 73,
+      "staticScore": 100,
+      "lastRunId": 11,
+      "status": "complete",
+      "skillHash": "536a487b28c88d73",
+      "snapshotBound": true,
+      "strategyVersion": 2,
+      "exec": {
+        "score": 100,
+        "passed": 4,
+        "total": 4,
+        "runAt": "2026-10-07T05:15:54.171Z",
+        "verified": false,
+        "status": "unverified"
+      },
+      "stability": {
+        "runs": 2,
+        "stdDev": 3,
+        "mean": 95
+      }
     },
     {
       "name": "codebase-design",
@@ -1034,7 +1528,11 @@
       "clarity": 73,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "design-taste-frontend",
@@ -1043,7 +1541,11 @@
       "clarity": 93,
       "staticScore": 80,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "fit-ride-studio",
@@ -1052,7 +1554,11 @@
       "clarity": 93,
       "staticScore": 80,
       "lastRunId": 3,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "full-output-enforcement",
@@ -1061,7 +1567,11 @@
       "clarity": 93,
       "staticScore": 80,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "html-anything-frame-logo-outro",
@@ -1070,7 +1580,11 @@
       "clarity": 73,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "light-spotlight-render",
@@ -1079,7 +1593,11 @@
       "clarity": 73,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "obsidian-vault",
@@ -1088,7 +1606,11 @@
       "clarity": 73,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "procedural-fish-render",
@@ -1097,7 +1619,11 @@
       "clarity": 73,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "release",
@@ -1106,7 +1632,11 @@
       "clarity": 73,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "remotion-3d-ticker",
@@ -1115,7 +1645,11 @@
       "clarity": 73,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "request-refactor-plan",
@@ -1124,7 +1658,11 @@
       "clarity": 73,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "requesting-code-review",
@@ -1133,7 +1671,11 @@
       "clarity": 73,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "ruler-progress-render",
@@ -1142,7 +1684,11 @@
       "clarity": 73,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "skill-creator",
@@ -1151,7 +1697,11 @@
       "clarity": 73,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "svg-assembly-animator",
@@ -1160,7 +1710,11 @@
       "clarity": 73,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "using-superpowers",
@@ -1169,7 +1723,11 @@
       "clarity": 73,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "defuddle",
@@ -1178,7 +1736,11 @@
       "clarity": 80,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "excalidraw-diagram",
@@ -1187,7 +1749,11 @@
       "clarity": 80,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "high-end-visual-design",
@@ -1196,7 +1762,11 @@
       "clarity": 80,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "imagegen-frontend-web",
@@ -1205,7 +1775,11 @@
       "clarity": 80,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "presentation-skill",
@@ -1214,7 +1788,11 @@
       "clarity": 80,
       "staticScore": 90,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "restore-legacy-sessions",
@@ -1223,7 +1801,11 @@
       "clarity": 80,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "xlsx",
@@ -1232,7 +1814,11 @@
       "clarity": 80,
       "staticScore": 90,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "handoff",
@@ -1241,21 +1827,18 @@
       "clarity": 67,
       "staticScore": 100,
       "lastRunId": 9,
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
       "exec": {
         "score": 100,
         "passed": 4,
         "total": 4,
-        "runAt": "2026-10-07T05:15:54.171Z"
-      }
-    },
-    {
-      "name": "aihot",
-      "overall": 90,
-      "trigger": null,
-      "clarity": null,
-      "staticScore": 90,
-      "lastRunId": 2,
-      "exec": null
+        "runAt": "2026-10-07T05:15:54.171Z",
+        "verified": false,
+        "status": "unverified"
+      },
+      "stability": null
     },
     {
       "name": "claude-to-im",
@@ -1264,7 +1847,11 @@
       "clarity": 87,
       "staticScore": 80,
       "lastRunId": 3,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "develop-web-game",
@@ -1273,7 +1860,11 @@
       "clarity": null,
       "staticScore": 90,
       "lastRunId": 2,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "html-anything",
@@ -1282,7 +1873,11 @@
       "clarity": 67,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "impeccable",
@@ -1291,7 +1886,11 @@
       "clarity": null,
       "staticScore": 90,
       "lastRunId": 2,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "industrial-brutalist-ui",
@@ -1300,7 +1899,11 @@
       "clarity": 87,
       "staticScore": 80,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "stitch-design-taste",
@@ -1309,7 +1912,11 @@
       "clarity": 87,
       "staticScore": 80,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "vercel-react-best-practices",
@@ -1318,7 +1925,11 @@
       "clarity": 87,
       "staticScore": 80,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "vercel-react-view-transitions",
@@ -1327,7 +1938,11 @@
       "clarity": 87,
       "staticScore": 80,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "cloudbase",
@@ -1336,7 +1951,11 @@
       "clarity": 73,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "mermaid-visualizer",
@@ -1345,7 +1964,11 @@
       "clarity": 73,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "stitch::extract-design-md",
@@ -1354,7 +1977,11 @@
       "clarity": 93,
       "staticScore": 70,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "stitch::extract-static-html",
@@ -1363,7 +1990,11 @@
       "clarity": 93,
       "staticScore": 70,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "video-wrapper",
@@ -1372,7 +2003,11 @@
       "clarity": 73,
       "staticScore": 90,
       "lastRunId": 3,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "web-gui-tester",
@@ -1381,7 +2016,11 @@
       "clarity": 93,
       "staticScore": 70,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "design-taste-frontend-v1",
@@ -1390,7 +2029,11 @@
       "clarity": 80,
       "staticScore": 80,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "gpt-taste",
@@ -1399,7 +2042,11 @@
       "clarity": 80,
       "staticScore": 80,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "html-anything-data-report",
@@ -1408,7 +2055,11 @@
       "clarity": 60,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "html-anything-deck-pitch",
@@ -1417,7 +2068,11 @@
       "clarity": 60,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "html-anything-deck-product-launch",
@@ -1426,7 +2081,11 @@
       "clarity": 60,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "html-anything-deck-swiss-international",
@@ -1435,7 +2094,11 @@
       "clarity": 60,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "html-anything-resume-modern",
@@ -1444,7 +2107,11 @@
       "clarity": 60,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "image-to-code",
@@ -1453,7 +2120,11 @@
       "clarity": 80,
       "staticScore": 80,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "logo-generator",
@@ -1462,7 +2133,11 @@
       "clarity": 80,
       "staticScore": 80,
       "lastRunId": 3,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "seedance-prompt",
@@ -1471,7 +2146,11 @@
       "clarity": 80,
       "staticScore": 80,
       "lastRunId": 3,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "brandkit",
@@ -1480,7 +2159,11 @@
       "clarity": 67,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "document-illustrator",
@@ -1489,7 +2172,11 @@
       "clarity": 67,
       "staticScore": 90,
       "lastRunId": 3,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "minimalist-ui",
@@ -1498,7 +2185,11 @@
       "clarity": 67,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "stitch::generate-design",
@@ -1507,7 +2198,11 @@
       "clarity": 87,
       "staticScore": 70,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "stitch::upload-to-stitch",
@@ -1516,7 +2211,11 @@
       "clarity": 87,
       "staticScore": 70,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "edit-article",
@@ -1525,12 +2224,18 @@
       "clarity": 53,
       "staticScore": 100,
       "lastRunId": 9,
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
       "exec": {
         "score": 100,
         "passed": 4,
         "total": 4,
-        "runAt": "2026-10-07T05:15:54.171Z"
-      }
+        "runAt": "2026-10-07T05:15:54.171Z",
+        "verified": false,
+        "status": "unverified"
+      },
+      "stability": null
     },
     {
       "name": "html-anything-article-magazine",
@@ -1539,7 +2244,11 @@
       "clarity": 53,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "html-anything-card-twitter",
@@ -1548,7 +2257,11 @@
       "clarity": 53,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "html-anything-card-xiaohongshu",
@@ -1557,7 +2270,11 @@
       "clarity": 53,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "html-anything-deck-blueprint",
@@ -1566,7 +2283,11 @@
       "clarity": 53,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "html-anything-deck-guizang-editorial",
@@ -1575,7 +2296,11 @@
       "clarity": 53,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "html-anything-deck-tech-sharing",
@@ -1584,7 +2309,11 @@
       "clarity": 53,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "html-anything-doc-kami-parchment",
@@ -1593,7 +2322,11 @@
       "clarity": 53,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "html-anything-frame-glitch-title",
@@ -1602,7 +2335,11 @@
       "clarity": 53,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "html-anything-poster-hero",
@@ -1611,7 +2348,11 @@
       "clarity": 53,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "html-anything-prototype-web",
@@ -1620,16 +2361,11 @@
       "clarity": 53,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
-    },
-    {
-      "name": "nanobanana-ppt-skills",
-      "overall": 86,
-      "trigger": 100,
-      "clarity": 73,
-      "staticScore": 80,
-      "lastRunId": 4,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "stitch::manage-design-system",
@@ -1638,7 +2374,11 @@
       "clarity": 73,
       "staticScore": 80,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "canvas-design",
@@ -1647,7 +2387,11 @@
       "clarity": 60,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "grill-me",
@@ -1656,7 +2400,11 @@
       "clarity": 60,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "grill-with-docs",
@@ -1665,7 +2413,11 @@
       "clarity": 60,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "html-anything-magazine-poster",
@@ -1674,7 +2426,11 @@
       "clarity": 47,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "html-anything-saas-landing",
@@ -1683,7 +2439,11 @@
       "clarity": 47,
       "staticScore": 100,
       "lastRunId": 6,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "html-anything-vfx-text-cursor",
@@ -1692,7 +2452,11 @@
       "clarity": 47,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "html-anything-video-hyperframes",
@@ -1701,7 +2465,29 @@
       "clarity": 47,
       "staticScore": 100,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
+    },
+    {
+      "name": "nanobanana-ppt-skills",
+      "overall": 84,
+      "trigger": 100,
+      "clarity": 67,
+      "staticScore": 80,
+      "lastRunId": 11,
+      "status": "complete",
+      "skillHash": "8dd482d1a377c094",
+      "snapshotBound": true,
+      "strategyVersion": 2,
+      "exec": null,
+      "stability": {
+        "runs": 2,
+        "stdDev": 0,
+        "mean": 84
+      }
     },
     {
       "name": "github-oneclick-packager",
@@ -1710,7 +2496,29 @@
       "clarity": 53,
       "staticScore": 90,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
+    },
+    {
+      "name": "youtube-clipper",
+      "overall": 82,
+      "trigger": 100,
+      "clarity": 80,
+      "staticScore": 60,
+      "lastRunId": 11,
+      "status": "complete",
+      "skillHash": "166862ca43d64bb9",
+      "snapshotBound": true,
+      "strategyVersion": 2,
+      "exec": null,
+      "stability": {
+        "runs": 2,
+        "stdDev": 1,
+        "mean": 81
+      }
     },
     {
       "name": "stitch::code-to-design",
@@ -1719,7 +2527,11 @@
       "clarity": 67,
       "staticScore": 70,
       "lastRunId": 9,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
       "name": "academic-pptx",
@@ -1728,16 +2540,29 @@
       "clarity": null,
       "staticScore": 80,
       "lastRunId": 2,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     },
     {
-      "name": "youtube-clipper",
+      "name": "teach",
       "overall": 80,
       "trigger": 100,
       "clarity": 73,
       "staticScore": 60,
-      "lastRunId": 3,
-      "exec": null
+      "lastRunId": 11,
+      "status": "complete",
+      "skillHash": "50c7ede2508454ed",
+      "snapshotBound": true,
+      "strategyVersion": 2,
+      "exec": null,
+      "stability": {
+        "runs": 2,
+        "stdDev": 1,
+        "mean": 81
+      }
     },
     {
       "name": "NanoBanana-PPT-Skills",
@@ -1746,16 +2571,11 @@
       "clarity": 67,
       "staticScore": 60,
       "lastRunId": 3,
-      "exec": null
-    },
-    {
-      "name": "teach",
-      "overall": 60,
-      "trigger": null,
-      "clarity": null,
-      "staticScore": 60,
-      "lastRunId": 2,
-      "exec": null
+      "status": "unverified",
+      "snapshotBound": false,
+      "strategyVersion": null,
+      "exec": null,
+      "stability": null
     }
   ]
 }

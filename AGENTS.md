@@ -22,10 +22,10 @@
 npm workspaces monorepo，TypeScript 全栈：
 
 - `packages/core`：多目录 scanner、frontmatter parser、内容指纹去重、静态质量信号、依赖图谱、分发/GitHub/推荐引擎
-- `packages/cli`：commander，`skillhub scan | list | search | show | roots | install | uninstall | outdated | pack | github-install | origins | outdated-remote | recommend | search-remote | adopt`
+- `packages/cli`：commander，`skillhub scan | list | search | show | roots | install | uninstall | outdated | pack | github-install | origins | outdated-remote | recommend | search-remote | adopt | collisions`
 - `apps/web`：Next.js 15 + Tailwind v4 仪表盘（localhost:3457）
-- `apps/eval`：`skillhub-eval`（trigger/gen/exec 三类评测 + export 榜单导出）+ node:sqlite 报告库
+- `apps/eval`：`skillhub-eval`（trigger/gen/exec 三类评测 + stats 稳定性统计 + trust 信任名单 + export 榜单导出）+ node:sqlite 报告库
 - `packages/mcp`：MCP server（recommend_skills / get_skill / library_stats），`SKILLHUB_HOME` 可指向自定义主目录
 - `scripts/hook`：ZCode UserPromptSubmit 主动推荐 hook
 
-评测报告存 `~/.skillhub/eval.db`（node:sqlite）；来源注册表 `~/.skillhub/origins.json`；GitHub 克隆缓存 `~/.skillhub/github-cache/`。
+评测报告存 `~/.skillhub/eval.db`（node:sqlite，含策略版本与快照指纹绑定）；执行级信任名单 `~/.skillhub/trusted-skills.json`；来源注册表 `~/.skillhub/origins.json`；GitHub 克隆缓存 `~/.skillhub/github-cache/`。

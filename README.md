@@ -52,6 +52,8 @@ npm run skillhub -- repair demo --from claude --file edited-SKILL.md --expected-
 npm run skillhub -- recommend "制作学术幻灯片" --client codex
 npm run skillhub -- kits research
 npm run skillhub-eval -- plan --from claude --names demo
+npm run skillhub-eval -- stats <skill>      # 评测历史 + 同内容重复评测的分数稳定性（±标准差）
+npm run skillhub-eval -- trust add <skill>  # 执行级评测信任名单（exec plan 默认拒绝名单外 skill）
 ```
 
 Web `/workbench` 可选择具体副本、用例、后端和模型，运行 API 跑批或下载 ZCode 作业 JSONL 再导入结果；支持进度、取消、失败重试、Markdown/HTML 导出及本地正反例编辑。API 使用进程中已有的 `SKILLHUB_API_KEY`、`SKILLHUB_MODEL`、`SKILLHUB_BASE_URL`，页面和任务文件不保存密钥。
