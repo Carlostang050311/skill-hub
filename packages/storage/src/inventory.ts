@@ -4,7 +4,7 @@ import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { scanAll, type RootReport, type ScanResult, type ScanRoot, type SkillRecord } from "@skillhub/core";
 
-export const INVENTORY_SCHEMA_VERSION = 1;
+export const INVENTORY_SCHEMA_VERSION = 2;
 
 export interface StoredScan {
   scanRunId: string;
@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS skills (
   references_json TEXT NOT NULL,
   mentions_json TEXT NOT NULL,
   scanned_at TEXT NOT NULL,
+  resource_stat_hash TEXT,
   PRIMARY KEY (scan_run_id, id)
 );
 CREATE TABLE IF NOT EXISTS inventory_state (
@@ -120,8 +121,17 @@ export class InventoryStore {
     db.exec("PRAGMA busy_timeout = 5000");
     db.exec(SCHEMA);
     const version = db.prepare("SELECT value FROM schema_meta WHERE key = 'version'").get() as { value?: unknown } | undefined;
+    // schema 迁移：幂等——列已存在（如迁移中断后的半完成状态）时跳过对应 ALTER
+    const execSchema = db.exec.bind(db);
     if (!version) {
       db.prepare("INSERT INTO schema_meta (key, value) VALUES ('version', ?)").run(String(INVENTORY_SCHEMA_VERSION));
+    } else if (String(version.value) === "1") {
+      // v1 → v2：skills 增加 resource_stat_hash（增量扫描的资源 stat 指纹）；旧行为 NULL，下次全量扫描自动补齐
+      const columns = db.prepare("PRAGMA table_info(skills)").all() as Array<{ name?: unknown }>;
+      if (!columns.some((c) => c.name === "resource_stat_hash")) {
+        execSchema("ALTER TABLE skills ADD COLUMN resource_stat_hash TEXT");
+      }
+      db.prepare("UPDATE schema_meta SET value = ? WHERE key = 'version'").run(String(INVENTORY_SCHEMA_VERSION));
     } else if (String(version.value) !== String(INVENTORY_SCHEMA_VERSION)) {
       db.close();
       throw new Error(`不支持的库存 schema 版本：${String(version.value)}，当前版本为 ${INVENTORY_SCHEMA_VERSION}`);
@@ -165,8 +175,8 @@ export class InventoryStore {
         const insertSkill = db.prepare(`INSERT INTO skills
           (scan_run_id, id, name, description, extra_frontmatter_json, source, source_kind, skill_path, skill_dir,
            dir_name, relative_id, version, files_json, body_chars, hash, content_hash, modified_at, quality_json,
-           references_json, mentions_json, scanned_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+           references_json, mentions_json, scanned_at, resource_stat_hash)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
         for (const skill of result.skills) {
           insertSkill.run(
             scanRunId,
@@ -190,6 +200,7 @@ export class InventoryStore {
             json(skill.references),
             json(skill.mentions),
             skill.scannedAt,
+            skill.resourceStatHash ?? null,
           );
         }
         db.prepare(`INSERT INTO inventory_state (singleton, current_run_id, updated_at) VALUES (1, ?, ?)
@@ -223,7 +234,7 @@ export class InventoryStore {
       FROM scan_roots WHERE scan_run_id = ? ORDER BY rowid`).all(scanRunId) as Array<Record<string, unknown>>;
     const skillRows = db.prepare(`SELECT id, name, description, extra_frontmatter_json, source, source_kind, skill_path,
       skill_dir, dir_name, relative_id, version, files_json, body_chars, hash, content_hash, modified_at,
-      quality_json, references_json, mentions_json, scanned_at FROM skills WHERE scan_run_id = ? ORDER BY rowid`).all(scanRunId) as Array<Record<string, unknown>>;
+      quality_json, references_json, mentions_json, scanned_at, resource_stat_hash FROM skills WHERE scan_run_id = ? ORDER BY rowid`).all(scanRunId) as Array<Record<string, unknown>>;
     const roots: RootReport[] = rootRows.map((row) => ({
       path: String(row.path),
       source: String(row.source),
@@ -249,6 +260,7 @@ export class InventoryStore {
       bodyChars: Number(row.body_chars),
       hash: String(row.hash),
       contentHash: row.content_hash == null ? undefined : String(row.content_hash),
+      resourceStatHash: row.resource_stat_hash == null ? undefined : String(row.resource_stat_hash),
       modifiedAt: numberOrNull(row.modified_at),
       quality: parseJson<SkillRecord["quality"]>(row.quality_json, `${scanRunId}/quality`),
       references: parseJson<string[]>(row.references_json, `${scanRunId}/references`),
@@ -266,10 +278,12 @@ export class InventoryStore {
 export function readInventory(roots: ScanRoot[], file: string, options: ReadScanOptions = {}): StoredScan {
   const store = new InventoryStore(file);
   const refresh = options.refresh ?? true;
-  const current = refresh ? null : store.current();
+  const current = store.current();
   const signature = rootSignature(roots);
-  if (current && current.rootSignature === signature) return current;
-  return store.saveScan(scanAll(roots), roots);
+  if (!refresh && current && current.rootSignature === signature) return current;
+  // 增量：同 roots 的最近快照作为 previous，内容与资源 stat 均未变的 skill 复用上次记录
+  const previous = current && current.rootSignature === signature ? current.result : undefined;
+  return store.saveScan(scanAll(roots, previous ? { previous } : {}), roots);
 }
 
 export function scanAndPersist(roots: ScanRoot[], file: string): StoredScan {

@@ -38,6 +38,7 @@ node packages/cli/dist/cli.js list --home <fixture-home> --json
 
 ## 尚未完成
 
-- 目前入口仍在每次显式扫描时刷新，尚未实现文件监听和按文件指纹增量扫描。
+- ~~按文件指纹增量扫描~~ → **2026-10-25 已实现**：`scanAll(roots, { previous })` 按 SKILL.md 内容指纹 + 资源 stat 指纹（路径+大小+mtime，不读资源内容）复用未变 skill 的记录，跳过 YAML 解析与目录快照；`stats: { parsed, reused, failed, mentionsStale }` 记录增量统计；库内 skill 名集合变化时复用记录的 mentions 沿用并标注 stale（该 skill 下次变更时更新）。schema v1→v2 幂等迁移（`resource_stat_hash` 列）。覆盖测试：增量复用/资源变化重建/与全量结果一致性/v1 旧库迁移降级。
+- 文件监听（watch 模式）仍未实现；扫描仍是显式触发。
 - SQLite 仍通过 `node:sqlite`，尚未封装可替换驱动的迁移 adapter。
 - 多进程锁、坏数据库恢复和迁移回滚将在下一阶段补齐。

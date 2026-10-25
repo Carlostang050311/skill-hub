@@ -49,6 +49,8 @@ export interface SkillRecord {
   hash: string;
   /** 单独的 SKILL.md 内容指纹，供兼容旧报告和正文比较 */
   contentHash?: string;
+  /** 资源文件的 stat 指纹（路径+大小+mtime 组合，不读内容）；增量扫描用它检测资源变化 */
+  resourceStatHash?: string;
   modifiedAt?: number;
   quality: QualitySignals;
   /** 正文引用的其他 skill 名（`xxx/SKILL.md` 链接与 `[[xxx]]`，未过滤） */
@@ -70,10 +72,23 @@ export interface RootReport {
   failedFiles: string[];
 }
 
+export interface ScanStats {
+  /** 本轮完整解析（含 YAML parse 与目录快照）的 skill 数 */
+  parsed: number;
+  /** SKILL.md 内容与资源 stat 均未变、复用上次记录的 skill 数 */
+  reused: number;
+  /** 解析失败的文件数 */
+  failed: number;
+  /** 库内 skill 名集合发生变化，复用记录的 mentions 可能不含新名字（将在该 skill 下次变更时更新） */
+  mentionsStale: boolean;
+}
+
 export interface ScanResult {
   skills: SkillRecord[];
   roots: RootReport[];
   scannedAt: string;
+  /** 仅增量扫描时填充 */
+  stats?: ScanStats;
 }
 
 export interface SkillGroup {

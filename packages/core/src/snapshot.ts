@@ -46,6 +46,35 @@ export function snapshotDirectory(dir: string): DirectorySnapshot {
   return { hash, files, modifiedAt: Math.max(0, ...files.map((f) => f.modifiedAt)) };
 }
 
+export interface DirectoryStat {
+  hash: string;
+  paths: string[];
+  modifiedAt: number;
+}
+
+/** 轻量目录探查：只 readdir + stat，不读文件内容；用于增量扫描的资源变化检测。 */
+export function statDirectory(dir: string): DirectoryStat {
+  const root = fs.realpathSync(dir);
+  const rows: Array<{ path: string; bytes: number; modifiedAt: number }> = [];
+  const visit = (current: string): void => {
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const full = path.join(current, entry.name);
+      const relative = path.relative(root, full).split(path.sep).join("/");
+      if (!isSkillResource(relative)) continue;
+      if (entry.isSymbolicLink()) throw new Error(`skill 资源含符号链接，无法可靠同步：${relative}`);
+      if (entry.isDirectory()) visit(full);
+      else if (entry.isFile()) {
+        const st = fs.statSync(full);
+        rows.push({ path: relative, bytes: st.size, modifiedAt: st.mtimeMs });
+      }
+    }
+  };
+  visit(root);
+  rows.sort((a, b) => a.path.localeCompare(b.path, "en"));
+  const hash = createHash("sha256").update(JSON.stringify(rows.map((r) => [r.path, r.bytes, r.modifiedAt]))).digest("hex").slice(0, 16);
+  return { hash, paths: rows.map((r) => r.path), modifiedAt: Math.max(0, ...rows.map((r) => r.modifiedAt)) };
+}
+
 export interface FileDifference {
   path: string;
   status: "added" | "changed" | "removed";

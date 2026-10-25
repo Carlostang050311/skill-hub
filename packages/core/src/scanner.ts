@@ -1,9 +1,10 @@
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { extractReferences } from "./graph.js";
 import { hashContent } from "./hash.js";
-import { snapshotDirectory } from "./snapshot.js";
+import { snapshotDirectory, statDirectory } from "./snapshot.js";
 import { parseSkillSource, type ParsedSkill } from "./parser.js";
 import { computeQuality } from "./quality.js";
 import type { RootReport, ScanResult, ScanRoot, SkillRecord } from "./types.js";
@@ -112,6 +113,7 @@ function buildRecord(root: ScanRoot, skillPath: string, raw: string, parsed: Par
     bodyChars: body.length,
     hash: snapshot.hash,
     contentHash: hashContent(raw),
+    resourceStatHash: statDirectory(skillDir).hash,
     modifiedAt: snapshot.modifiedAt,
     quality: computeQuality({ frontmatter, body, dirName, files, skillDir }),
     references: extractReferences(body),
@@ -120,24 +122,60 @@ function buildRecord(root: ScanRoot, skillPath: string, raw: string, parsed: Par
   };
 }
 
-/** 扫描全部根目录；单个 skill 解析失败只计数不阻断 */
-export function scanAll(roots: ScanRoot[]): ScanResult {
+export interface ScanOptions {
+  /** 上一次扫描结果：提供后走增量——SKILL.md 内容与资源 stat 均未变的 skill 复用上次记录，跳过解析与目录快照。 */
+  previous?: ScanResult;
+}
+
+/** 扫描全部根目录；单个 skill 解析失败只计数不阻断。提供 previous 时做增量。 */
+export function scanAll(roots: ScanRoot[], options: ScanOptions = {}): ScanResult {
   const scannedAt = new Date().toISOString();
+  const previousByPath = new Map<string, SkillRecord>();
+  for (const skill of options.previous?.skills ?? []) previousByPath.set(skill.skillPath, skill);
+  const previousNamesHash = options.previous
+    ? createHash("sha256").update([...new Set(options.previous.skills.map((s) => s.name))].sort().join("|")).digest("hex")
+    : null;
+
   const skills: SkillRecord[] = [];
   const bodies = new Map<string, string>();
   const reports: RootReport[] = [];
+  let parsed = 0;
+  let reused = 0;
   for (const root of roots) {
     const exists = fs.existsSync(root.path);
     let count = 0;
     const failedFiles: string[] = [];
     if (exists) {
       for (const skillPath of listSkillFiles(root.path, root.maxDepth ?? 5)) {
+        let raw: string;
         try {
-          const raw = fs.readFileSync(skillPath, "utf8");
-          const parsed = parseSkillSource(raw);
-          const record = buildRecord(root, skillPath, raw, parsed, scannedAt);
+          raw = fs.readFileSync(skillPath, "utf8");
+        } catch {
+          failedFiles.push(skillPath);
+          continue;
+        }
+        const contentHash = hashContent(raw);
+        const prev = previousByPath.get(skillPath);
+        const skillDir = path.dirname(skillPath);
+        if (prev && prev.contentHash === contentHash && prev.resourceStatHash) {
+          try {
+            const stat = statDirectory(skillDir);
+            if (stat.hash === prev.resourceStatHash) {
+              skills.push({ ...prev, scannedAt, modifiedAt: stat.modifiedAt });
+              reused += 1;
+              count += 1;
+              continue;
+            }
+          } catch {
+            // 目录探查失败（如符号链接）按变化处理，走完整解析
+          }
+        }
+        try {
+          const parsedSkill = parseSkillSource(raw);
+          const record = buildRecord(root, skillPath, raw, parsedSkill, scannedAt);
           skills.push(record);
-          bodies.set(record.id, parsed.body);
+          bodies.set(record.id, parsedSkill.body);
+          parsed += 1;
           count += 1;
         } catch {
           failedFiles.push(skillPath);
@@ -154,6 +192,17 @@ export function scanAll(roots: ScanRoot[]): ScanResult {
       failedFiles,
     });
   }
+
+  const currentNamesHash = createHash("sha256").update([...new Set(skills.map((s) => s.name))].sort().join("|")).digest("hex");
+  const namesChanged = previousNamesHash !== null && currentNamesHash !== previousNamesHash;
   computeMentions(skills, bodies);
+  if (options.previous) {
+    return {
+      skills,
+      roots: reports,
+      scannedAt,
+      stats: { parsed, reused, failed: reports.reduce((sum, r) => sum + r.failed, 0), mentionsStale: namesChanged && reused > 0 },
+    };
+  }
   return { skills, roots: reports, scannedAt };
 }
