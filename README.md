@@ -16,7 +16,7 @@ Skill 本质 = frontmatter（name/description）+ 正文指令 + 附属资源文
 
 - **索引**：扫描 `~/.agents/skills`、`~/.claude/skills`、`~/.codex/skills` 与 Claude/ZCode 插件缓存，解析 frontmatter，内容指纹去重、静态质量信号（description 截断风险、缺失资源引用、name 规范等）、显式引用 + 正文提及两路依赖信号
 - **Web UI**（Next.js 15）：总览、技能库与任务推荐、使用卡片、依赖图谱、文件差异与备份恢复、指导书修复预览、评测操作台、版本对比与三类场景技能包。
-- **评测框架**：scenario YAML（触发正/反用例）→ `plan` 生成作业 → 模型端跑批（ZCode 子代理或 OpenAI 兼容 API）→ `ingest` 三层评分入库（触发 40% + 清晰度 30% + 静态 30%）；**执行级评测**（`exec`）让 skill 在沙箱真实干活，双评审独立复核
+- **评测框架**：scenario YAML（触发正/反用例）→ `plan` 生成作业 → 模型端跑批（ZCode 子代理或 OpenAI 兼容 API）→ `ingest` 三层评分入库（触发 40% + 清晰度 30% + 静态 30%）；**执行级评测**（`exec`）让 skill 在隔离工作目录真实干活，双评审独立复核。执行级评测只应在受信任的本地 skill 上运行：它不提供操作系统级沙箱，对陌生来源（GitHub、插件缓存）的 skill 应先审阅内容再执行。
 - **分发同步**：完整目录指纹覆盖脚本与资源；Markdown 归一化行尾。`diff` 预览逐文件差异，覆盖保存原件，`backups/restore` 恢复；预览后内容变化时拒绝覆盖。支持 Windows 跨盘备份。
 - **GitHub 生态**：`github-install <owner/repo>`（发现 SKILL.md → 查重 → 安装 → 登记来源）、`origins` 上游注册表、`outdated-remote` 目录指纹对比上游（`--apply` 一键更新）；`search-remote` 直接搜 skills.sh 全生态，`adopt` 把搜到的 skill 收编进本机管理体系
 - **agent 查库**：`recommend "<任务描述>"` 按任务推荐 skill（中英文关键词 + 质量信号参与排序），配套 meta-skill `skill-finder` 让编码代理干活前自动查库（随仓库 `skills/` 目录分发）；可选 `scripts/hook/prompt-recommend.mjs`（ZCode UserPromptSubmit hook）在每条用户消息时主动注入推荐
@@ -105,7 +105,7 @@ npm run skillhub -- recommend "把这篇文章做成小红书图文卡片"   # C
 
 此前本机 318 条 skill 记录的历史快照（未经本轮重新跑模型）：
 
-- 9 轮评测、累计约 1700 个作业，184 个 skill 有公开评分；触发准确率 100%、零过触发
+- 7 轮评测、累计约 1700 个作业，184 个 skill 有公开评分；触发准确率 100%、零过触发
 - 抓出 description 缺失、正文自相矛盾、依赖不匹配、硬编码路径等真实缺陷（含 skill-hub 自己的 skill）
 - 执行级评测 11 个 skill 在沙箱真实干活，双评审独立复核全部满分
 - 上游检测抓到第三方仓库的真实更新

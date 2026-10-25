@@ -1,6 +1,6 @@
 # 318 个 skill，三天，一个 Agent Skill 管理平台——skill-hub 构建记
 
-2026-10-03 到 10-05，三天，我用 AI 把散在四类目录里的 318 个 Agent Skill 收拾成一个带评测闭环的开源平台：skill-hub（github.com/Carlostang050311/skill-hub）。截至发稿：23 个 commit，107 个测试全绿，公开质量榜已上线。
+2026-10-03 到 10-05，三天，我用 AI 把散在四类目录里的 318 个 Agent Skill 收拾成一个带评测闭环的开源平台：skill-hub（github.com/Carlostang050311/skill-hub）。截至发稿：30 个 commit，32 个测试文件 162 个用例全绿，公开质量榜已上线。
 
 这篇文章不是炫技。额度上限一亿 token、模型只是 flash 档，这决定了选型；但我没做 token 计量，正文不报花销，讲方法和坑：**有出处的给出处，没留痕的指给你看。**
 
@@ -103,7 +103,7 @@
 git clone https://github.com/Carlostang050311/skill-hub
 cd skill-hub
 npm install && npm run build
-npm test                        # 19 个文件 97 个测试，我落笔前刚跑了一遍，3.9 秒全绿
+npm test                        # 32 个文件 162 个用例，我落笔前刚跑了一遍，6.8 秒全绿
 npm run start -w @skillhub/web  # Web UI → http://localhost:3457
 ```
 

@@ -16,7 +16,7 @@ A skill is essentially frontmatter (name/description) + instruction body + resou
 
 - **Indexing**: scans `~/.agents/skills`, `~/.claude/skills`, `~/.codex/skills` and Claude/ZCode plugin caches; parses frontmatter, content fingerprints for dedup, static quality signals (description truncation risk, missing resource refs, name conventions), explicit references + in-body mentions as two dependency signals
 - **Web UI** (Next.js 15): inventory and task recommendations, usage cards, dependency graph, file diffs and backup restore, repair preview, evaluation workbench, comparable version reports and three workflow packs.
-- **Evaluation framework**: scenario YAML (positive/negative trigger cases) → `plan` generates jobs → model runs them (ZCode subagents or OpenAI-compatible API) → `ingest` scores three layers into SQLite (trigger 40% + clarity 30% + static 30%); **exec-level evaluation** (`exec`) makes skills actually work in a sandbox, double-judged independently
+- **Evaluation framework**: scenario YAML (positive/negative trigger cases) → `plan` generates jobs → model runs them (ZCode subagents or OpenAI-compatible API) → `ingest` scores three layers into SQLite (trigger 40% + clarity 30% + static 30%); **exec-level evaluation** (`exec`) makes skills actually work in an isolated working directory, double-judged independently. Exec-level evaluation should only run on trusted local skills: it does not provide an OS-level sandbox, and skills from unfamiliar sources (GitHub, plugin caches) should be reviewed before execution.
 - **Distribution**: directory fingerprints cover scripts and resources, with Markdown line-ending normalization. Preview with `diff`, retain originals on overwrite, restore with `backups/restore`, and reject stale previews. Windows cross-volume backups are supported.
 - **GitHub ecosystem**: `github-install <owner/repo>` (discover SKILL.md → dedup → install → record origin), `origins` registry, `outdated-remote` compares directory fingerprints against upstream (`--apply` to update); `search-remote` searches the whole skills.sh ecosystem, `adopt` brings a discovered skill into local management
 - **Agent-facing lookup**: `recommend "<task>"` ranks skills for a task description, plus the `skill-finder` meta-skill; an optional ZCode hook (`scripts/hook/prompt-recommend.mjs`) proactively injects recommendations on every user message
@@ -103,7 +103,7 @@ Three tools: `recommend_skills` (task → ranked recommendations), `get_skill` (
 
 Earlier snapshot of 318 local skill records (models were not rerun for this delivery):
 
-- 9 evaluation rounds, ~1,700 jobs total, 184 skills publicly scored; 100% trigger accuracy, zero false triggers
+- 7 evaluation rounds, ~1,700 jobs total, 184 skills publicly scored; 100% trigger accuracy, zero false triggers
 - Surfaced missing descriptions, self-contradicting bodies, mismatched dependencies, hardcoded paths — including bugs in skill-hub's own skills
 - Exec-level evaluation: 11 skills actually worked in sandboxes, double-judged, all rubrics passed
 - Upstream check caught real updates in third-party repos
