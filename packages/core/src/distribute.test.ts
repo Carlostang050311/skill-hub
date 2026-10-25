@@ -3,6 +3,7 @@ import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { hashContent } from "./hash.js";
 import { defaultRoots, scanAll } from "./scanner.js";
+import { listBackups, restoreSkillBackup } from "./backups.js";
 import {
   installSkill,
   isTargetKind,
@@ -123,6 +124,21 @@ describe("uninstallSkill", () => {
     expect(uninstallSkill(scanAll(defaultRoots(home)).skills, "toolkit", "claude", home)).toBe(true);
     expect(fs.existsSync(path.join(targetDirFor("claude", home), "toolkit"))).toBe(false);
     expect(uninstallSkill(scanAll(defaultRoots(home)).skills, "toolkit", "claude", home)).toBe(false);
+  });
+
+  it("提供 backupRoot 时删除前自动备份，且可用 restoreSkillBackup 恢复", () => {
+    const home = fixtureHome();
+    const records = scanAll(defaultRoots(home)).skills;
+    installSkill(records, "toolkit", { to: "claude", home });
+    const backupRoot = path.join(home, "uninstall-backups");
+    expect(uninstallSkill(scanAll(defaultRoots(home)).skills, "toolkit", "claude", home, backupRoot)).toBe(true);
+    expect(fs.existsSync(path.join(targetDirFor("claude", home), "toolkit"))).toBe(false);
+
+    const backups = listBackups(backupRoot);
+    expect(backups).toHaveLength(1);
+    expect(backups[0]?.replacementHash).toBe(""); // 删除场景：替换物为空
+    restoreSkillBackup(backupRoot, backups[0].id, [targetDirFor("claude", home)], null);
+    expect(fs.existsSync(path.join(targetDirFor("claude", home), "toolkit", "SKILL.md"))).toBe(true);
   });
 });
 

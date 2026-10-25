@@ -141,4 +141,21 @@ describe("origins 读写", () => {
   it("文件不存在时返回空表", () => {
     expect(loadOrigins(path.join(newTempDir(), "nope.json"))).toEqual({});
   });
+
+  it("损坏的注册表被移到 .corrupt 现场并拒绝静默清空", () => {
+    const dir = newTempDir();
+    const file = path.join(dir, "origins.json");
+    fs.writeFileSync(file, "{ 不是 JSON");
+    expect(() => loadOrigins(file)).toThrow(/来源注册表损坏/);
+    const leftovers = fs.readdirSync(dir).filter((f) => f.startsWith("origins.json.corrupt-"));
+    expect(leftovers).toHaveLength(1);
+  });
+
+  it("saveOrigins 原子写：不留临时文件", () => {
+    const dir = newTempDir();
+    const file = path.join(dir, "origins.json");
+    saveOrigins(file, { a: { repo: "o/r", skillPath: "a", targetDir: "/t", dirHash: "h", installedAt: "t" } });
+    expect(fs.readFileSync(file, "utf8")).toContain("\"a\"");
+    expect(fs.readdirSync(dir).filter((f) => f.includes(".tmp-"))).toHaveLength(0);
+  });
 });

@@ -47,6 +47,8 @@ export function replaceSkillDirectory(source: string, target: string, backupRoot
     if (path.resolve(backupDir).startsWith(path.resolve(target) + path.sep)) throw new Error("备份目录不能放在被覆盖的 skill 内");
     fs.mkdirSync(backupDir, { recursive: true });
     metadata = { id, createdAt: new Date().toISOString(), targetPath: path.resolve(target), originalHash: currentHash, replacementHash: sourceHash };
+    // 交换前最后一刻再校验一次目标指纹（缩小预览到替换之间的竞态窗口）
+    if (snapshotDirectory(target).hash !== currentHash) throw new Error("目标在替换前发生变化，请重新预览");
     original = path.join(backupDir, "skill");
     try { fs.renameSync(target, original); }
     catch (error) {
@@ -70,6 +72,10 @@ export function replaceSkillDirectory(source: string, target: string, backupRoot
       fs.renameSync(original, target);
     }
     throw error;
+  }
+  // 成功路径：EXDEV 分支留在目标盘父目录的临时 original（内容已复制进备份）安全清理
+  if (original && backupDir && !path.resolve(original).startsWith(path.resolve(backupDir) + path.sep) && fs.existsSync(original)) {
+    fs.rmSync(original, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
   }
   return { backupId, filesCopied: snapshotDirectory(target).files.length };
 }

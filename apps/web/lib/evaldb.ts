@@ -15,7 +15,11 @@ export const getEvalData = cache((): EvalData | null => {
   const dbPath = path.join(stateRoot(), "eval.db");
   if (!fs.existsSync(dbPath)) return null;
   const db = openDb(dbPath);
-  return { runs: listRuns(db), latest: latestRun(db) };
+  try {
+    return { runs: listRuns(db), latest: latestRun(db) };
+  } finally {
+    db.close();
+  }
 });
 
 export interface ExecSkillRow {
@@ -65,10 +69,14 @@ export const getAllRunReports = cache((): FullRun[] => {
   const dbPath = path.join(stateRoot(), "eval.db");
   if (!fs.existsSync(dbPath)) return [];
   const db = openDb(dbPath);
-  const out: FullRun[] = [];
-  for (const summary of listRuns(db).slice(0, 10)) {
-    const found = getRunReport(db, summary.id);
-    if (found) out.push({ summary, report: found.report });
+  try {
+    const out: FullRun[] = [];
+    for (const summary of listRuns(db).slice(0, 10)) {
+      const found = getRunReport(db, summary.id);
+      if (found) out.push({ summary, report: found.report });
+    }
+    return out;
+  } finally {
+    db.close();
   }
-  return out;
 });

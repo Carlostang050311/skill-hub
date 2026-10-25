@@ -128,17 +128,25 @@ export interface OriginEntry {
 export type OriginsMap = Record<string, OriginEntry>;
 
 export function loadOrigins(file: string): OriginsMap {
+  if (!fs.existsSync(file)) return {};
   try {
     const parsed: unknown = JSON.parse(fs.readFileSync(file, "utf8"));
-    return parsed && typeof parsed === "object" ? (parsed as OriginsMap) : {};
-  } catch {
-    return {};
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed as OriginsMap;
+    throw new Error("内容不是 JSON 映射");
+  } catch (error) {
+    // 损坏时保留现场并拒绝静默清空：后续写入必须基于已恢复的数据，防止覆盖用户登记
+    const corrupt = `${file}.corrupt-${Date.now()}`;
+    try { fs.renameSync(file, corrupt); } catch { /* 保留原文件 */ }
+    throw new Error(`来源注册表损坏，已移至 ${corrupt}，请检查后重建：${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
 export function saveOrigins(file: string, origins: OriginsMap): void {
   fs.mkdirSync(path.dirname(file), { recursive: true });
-  fs.writeFileSync(file, JSON.stringify(origins, null, 2) + "\n", "utf8");
+  // 原子写：先落临时文件再 rename，避免半写文件
+  const tmp = `${file}.tmp-${process.pid}`;
+  fs.writeFileSync(tmp, JSON.stringify(origins, null, 2) + "\n", "utf8");
+  fs.renameSync(tmp, file);
 }
 
 export function recordOrigin(file: string, name: string, entry: Omit<OriginEntry, "installedAt">): void {

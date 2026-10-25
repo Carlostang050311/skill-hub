@@ -31,8 +31,15 @@ import { inventoryDbPath, readInventory, type StoredScan } from "@skillhub/stora
 import { parseSkillsFindOutput } from "./find-parse.js";
 
 const VERSION = "0.1.0";
-const ORIGINS_FILE = path.join(os.homedir(), ".skillhub", "origins.json");
-const GITHUB_CACHE_ROOT = path.join(os.homedir(), ".skillhub", "github-cache");
+
+/** 状态路径从 home 派生：--home / SKILLHUB_HOME 指向隔离目录时，安装与来源登记必须写进同一目录，不能写真实用户目录 */
+function originsFile(home?: string): string {
+  return path.join(home ?? os.homedir(), ".skillhub", "origins.json");
+}
+
+function githubCacheRoot(home?: string): string {
+  return path.join(home ?? os.homedir(), ".skillhub", "github-cache");
+}
 
 interface GlobalOpts {
   json?: boolean;
@@ -285,7 +292,7 @@ export async function main(argv: string[]): Promise<void> {
       process.exitCode = 1;
       return;
     }
-    const removed = uninstallSkill(storedScan(defaultRoots(homeFor(opts.home)), opts.home).result.skills, name, opts.from, opts.home);
+    const removed = uninstallSkill(storedScan(defaultRoots(homeFor(opts.home)), opts.home).result.skills, name, opts.from, opts.home, path.join(homeFor(opts.home), ".skillhub", "uninstall-backups"));
     if (opts.json) {
       printJson({ name, from: opts.from, removed });
       return;
@@ -334,14 +341,17 @@ export async function main(argv: string[]): Promise<void> {
     .option("--list", "只列出仓库里发现的 skill，不安装")
     .option("--force", "目标内容不同时覆盖")
     .option("--dry-run", "只看将执行的操作")
+    .option("--home <dir>", "覆盖用户主目录（缓存与来源登记写进同一目录）")
     .option("--json", "JSON 输出");
-  githubInstall.action((ownerRepo: string, opts: { to: string; skill?: string; all?: boolean; list?: boolean; force?: boolean; dryRun?: boolean; json?: boolean }) => {
+  githubInstall.action((ownerRepo: string, opts: { to: string; skill?: string; all?: boolean; list?: boolean; force?: boolean; dryRun?: boolean; home?: string; json?: boolean }) => {
     if (!isTargetKind(opts.to)) {
       console.error("--to 只支持 agents / claude / codex");
       process.exitCode = 1;
       return;
     }
-    const synced = syncRepoCache(ownerRepo, GITHUB_CACHE_ROOT);
+    const cacheRoot = githubCacheRoot(opts.home);
+    const originsPath = originsFile(opts.home);
+    const synced = syncRepoCache(ownerRepo, cacheRoot);
     const records = discoverSkills(synced.dir);
     if (!opts.json) console.log(`缓存：${synced.dir}${synced.refreshed ? "（有更新）" : ""}`);
     if (records.length === 0) {
@@ -377,7 +387,7 @@ export async function main(argv: string[]): Promise<void> {
         if (!record) throw new Error(`仓库里没有名为 ${name} 的 skill`);
         const result = installSkill(records, name, { to: { dir: targetRoot }, force: opts.force, dryRun: opts.dryRun });
         if (result.status === "installed" && !opts.dryRun) {
-          recordOrigin(ORIGINS_FILE, name, {
+          recordOrigin(originsPath, name, {
             repo: ownerRepo,
             skillPath: record.relativeId,
             dirName: record.dirName,
@@ -405,9 +415,9 @@ export async function main(argv: string[]): Promise<void> {
   });
 
   const originsCmd = program.command("origins").description("skill 的 GitHub 上游注册表");
-  originsCmd.option("--json", "JSON 输出");
-  originsCmd.action((opts: { json?: boolean }) => {
-    const origins = loadOrigins(ORIGINS_FILE);
+  originsCmd.option("--json", "JSON 输出").option("--home <dir>", "覆盖用户主目录");
+  originsCmd.action((opts: { json?: boolean; home?: string }) => {
+    const origins = loadOrigins(originsFile(opts.home));
     if (opts.json) {
       printJson(origins);
       return;
@@ -440,7 +450,7 @@ export async function main(argv: string[]): Promise<void> {
         return;
       }
       const targetRoot = record.skillDir.slice(0, record.skillDir.length - record.relativeId.length - 1);
-      recordOrigin(ORIGINS_FILE, name, {
+      recordOrigin(originsFile(opts.home), name, {
         repo: ownerRepo,
         skillPath: opts.path ?? record.relativeId,
         dirName: record.dirName,
@@ -451,9 +461,10 @@ export async function main(argv: string[]): Promise<void> {
     });
 
   const outdatedRemote = program.command("outdated-remote").description("对照 GitHub 上游检查已登记 skill 的更新");
-  outdatedRemote.option("--apply", "把有更新的直接覆盖安装").option("--json", "JSON 输出");
-  outdatedRemote.action((opts: { apply?: boolean; json?: boolean }) => {
-    const origins = loadOrigins(ORIGINS_FILE);
+  outdatedRemote.option("--apply", "把有更新的直接覆盖安装").option("--home <dir>", "覆盖用户主目录").option("--json", "JSON 输出");
+  outdatedRemote.action((opts: { apply?: boolean; home?: string; json?: boolean }) => {
+    const cacheRoot = githubCacheRoot(opts.home);
+    const origins = loadOrigins(originsFile(opts.home));
     const entries = Object.entries(origins);
     if (entries.length === 0) {
       console.error("注册表为空：先用 github-install 或 origins add 登记");
@@ -463,7 +474,7 @@ export async function main(argv: string[]): Promise<void> {
     const rows: Array<{ name: string; repo: string; status: string; detail: string }> = [];
     for (const [name, entry] of entries) {
       try {
-        const synced = syncRepoCache(entry.repo, GITHUB_CACHE_ROOT);
+        const synced = syncRepoCache(entry.repo, cacheRoot);
         const upstream = discoverSkills(synced.dir).find(
           (r) =>
             r.relativeId.toLowerCase() === entry.skillPath.toLowerCase() ||
@@ -494,7 +505,7 @@ export async function main(argv: string[]): Promise<void> {
         if (opts.apply) {
           const applied = installSkill(discoverSkills(synced.dir), upstream.name, { to: { dir: entry.targetDir }, force: true });
           if (applied.status === "installed") {
-            recordOrigin(ORIGINS_FILE, name, {
+            recordOrigin(originsFile(opts.home), name, {
               repo: entry.repo,
               skillPath: upstream.relativeId,
               dirName: upstream.dirName,
@@ -606,7 +617,8 @@ export async function main(argv: string[]): Promise<void> {
       process.exitCode = 1;
       return;
     }
-    const synced = syncRepoCache(ownerRepo, GITHUB_CACHE_ROOT);
+    const cacheRoot = githubCacheRoot(opts.home);
+    const synced = syncRepoCache(ownerRepo, cacheRoot);
     const records = discoverSkills(synced.dir);
     if (records.length === 0) {
       console.error("仓库里没有发现 SKILL.md");
@@ -619,6 +631,7 @@ export async function main(argv: string[]): Promise<void> {
     }
     const names = opts.skill ? opts.skill.split(",").map((s) => s.trim()).filter(Boolean) : [...byName.keys()];
     const targetRoot = targetDirFor(opts.to as TargetKind);
+    const originsPath = originsFile(opts.home);
     const adopted: Array<Record<string, unknown>> = [];
     for (const name of names) {
       const record = byName.get(name);
@@ -631,7 +644,7 @@ export async function main(argv: string[]): Promise<void> {
       try {
         const result = installSkill(records, name, { to: { dir: targetRoot }, force: opts.force });
         if (result.status === "installed") {
-          recordOrigin(ORIGINS_FILE, name, {
+          recordOrigin(originsPath, name, {
             repo: ownerRepo,
             skillPath: record.relativeId,
             dirName: record.dirName,

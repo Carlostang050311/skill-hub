@@ -113,7 +113,9 @@ export async function main(argv: string[]): Promise<void> {
         .map((l) => JSON.parse(l) as EvalJob);
       const results = parseResultsFile(fs.readFileSync(opts.results, "utf8"));
       const report = scoreRun(scenarios, scanRecords(opts.home), jobs, results, new Date().toISOString(), "zcode", opts.model);
-      const runId = insertRun(openDb(opts.db), report);
+      let runId: number;
+      const db = openDb(opts.db);
+      try { runId = insertRun(db, report); } finally { db.close(); }
       if (opts.json) {
         printJson({ runId, report });
         return;
@@ -141,18 +143,22 @@ export async function main(argv: string[]): Promise<void> {
   reportCmd.option("--run <id>", "指定 run id（默认最新）");
   reportCmd.action((opts: { run?: string; db: string; json?: boolean }) => {
     const db = openDb(opts.db);
-    const found = opts.run ? getRunReport(db, Number(opts.run)) : latestRun(db);
-    if (!found) {
-      console.error("没有已入库的评测报告，先跑 plan → 跑批 → ingest");
-      process.exitCode = 1;
-      return;
-    }
-    if (opts.json) {
-      printJson(found.report);
-      return;
-    }
-    for (const r of listRuns(db)) {
-      console.log(`run #${r.id}  ${r.startedAt}  ${r.backend}${r.model ? `/${r.model}` : ""}  ${r.totalSkills} skills  overall ${r.avgOverall ?? "—"}`);
+    try {
+      const found = opts.run ? getRunReport(db, Number(opts.run)) : latestRun(db);
+      if (!found) {
+        console.error("没有已入库的评测报告，先跑 plan → 跑批 → ingest");
+        process.exitCode = 1;
+        return;
+      }
+      if (opts.json) {
+        printJson(found.report);
+        return;
+      }
+      for (const r of listRuns(db)) {
+        console.log(`run #${r.id}  ${r.startedAt}  ${r.backend}${r.model ? `/${r.model}` : ""}  ${r.totalSkills} skills  overall ${r.avgOverall ?? "—"}`);
+      }
+    } finally {
+      db.close();
     }
   });
 
@@ -365,18 +371,22 @@ export async function main(argv: string[]): Promise<void> {
     .option("--db <file>", "评测库路径", defaultDbPath());
   exportCmd.action((opts: { out: string; execRuns: string; db: string }) => {
     const db = openDb(opts.db);
-    let execRuns: ExecRunRow[] = [];
-    if (fs.existsSync(opts.execRuns)) {
-      try {
-        execRuns = JSON.parse(fs.readFileSync(opts.execRuns, "utf8")) as ExecRunRow[];
-      } catch {
-        execRuns = [];
+    try {
+      let execRuns: ExecRunRow[] = [];
+      if (fs.existsSync(opts.execRuns)) {
+        try {
+          execRuns = JSON.parse(fs.readFileSync(opts.execRuns, "utf8")) as ExecRunRow[];
+        } catch {
+          execRuns = [];
+        }
       }
+      const data = collectLeaderboard(db, execRuns, new Date().toISOString());
+      fs.mkdirSync(path.dirname(opts.out), { recursive: true });
+      fs.writeFileSync(opts.out, JSON.stringify(data, null, 2) + "\n", "utf8");
+      console.log(`质量榜数据已导出：${opts.out}（${data.skills.length} 个 skill，${data.runs.length} 个 run）`);
+    } finally {
+      db.close();
     }
-    const data = collectLeaderboard(db, execRuns, new Date().toISOString());
-    fs.mkdirSync(path.dirname(opts.out), { recursive: true });
-    fs.writeFileSync(opts.out, JSON.stringify(data, null, 2) + "\n", "utf8");
-    console.log(`质量榜数据已导出：${opts.out}（${data.skills.length} 个 skill，${data.runs.length} 个 run）`);
   });
 
   await program.parseAsync(argv, { from: "user" });

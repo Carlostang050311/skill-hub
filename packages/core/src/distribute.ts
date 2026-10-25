@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { randomUUID } from "node:crypto";
 import { compareDirectories, snapshotDirectory, type FileDifference } from "./snapshot.js";
 import { replaceSkillDirectory } from "./backups.js";
 import type { SkillRecord } from "./types.js";
@@ -144,14 +145,29 @@ export function installSkill(records: SkillRecord[], name: string, opts: Install
   };
 }
 
-/** 卸载目标目录里的 skill（按 skill 名解析目录名） */
-export function uninstallSkill(records: SkillRecord[], name: string, kind: TargetKind, home?: string): boolean {
+/** 卸载目标目录里的 skill（按 skill 名解析目录名）；提供 backupRoot 时删除前先留备份（可经 restoreSkillBackup 恢复） */
+export function uninstallSkill(records: SkillRecord[], name: string, kind: TargetKind, home?: string, backupRoot?: string): boolean {
   const anyOccurrence = records.find((r) => r.name === name);
   if (!anyOccurrence) throw new Error(`找不到 skill：${name}`);
-  const destDir = path.resolve(targetDirFor(kind, home), anyOccurrence.dirName);
-  const rootBoundary = path.resolve(targetDirFor(kind, home)) + path.sep;
-  if (!destDir.startsWith(rootBoundary)) throw new Error(`目标路径越界：${destDir}`);
+  const root = path.resolve(targetDirFor(kind, home));
+  const destDir = path.resolve(root, anyOccurrence.dirName);
+  if (destDir !== root && !destDir.startsWith(root + path.sep)) throw new Error(`目标路径越界：${destDir}`);
   if (!fs.existsSync(path.join(destDir, "SKILL.md"))) return false;
+  if (backupRoot) {
+    // 破坏性删除前自动备份：与 install 的备份同构（listBackups 可列出、restoreSkillBackup 可恢复）
+    const id = randomUUID();
+    const backupDir = path.join(path.resolve(backupRoot), id);
+    fs.mkdirSync(backupDir, { recursive: true });
+    fs.cpSync(destDir, path.join(backupDir, "skill"), { recursive: true });
+    const metadata = {
+      id,
+      createdAt: new Date().toISOString(),
+      targetPath: destDir,
+      originalHash: snapshotDirectory(destDir).hash,
+      replacementHash: "",
+    };
+    fs.writeFileSync(path.join(backupDir, "backup.json"), JSON.stringify(metadata, null, 2) + "\n", "utf8");
+  }
   fs.rmSync(destDir, { recursive: true, force: true });
   return true;
 }
@@ -215,6 +231,11 @@ export function packSkill(records: SkillRecord[], name: string, outRoot: string)
   const destDir = path.resolve(outRoot, source.dirName);
   const rootBoundary = path.resolve(outRoot) + path.sep;
   if (!destDir.startsWith(rootBoundary)) throw new Error(`输出路径越界：${destDir}`);
+  // 打包会先删除同名输出目录：与来源目录重合时等于删源，必须拒绝
+  const sourceRoot = path.resolve(source.skillDir);
+  if (destDir === sourceRoot || destDir.startsWith(sourceRoot + path.sep) || sourceRoot.startsWith(destDir + path.sep)) {
+    throw new Error(`输出目录与来源目录重合，拒绝打包：${destDir}`);
+  }
   if (fs.existsSync(destDir)) fs.rmSync(destDir, { recursive: true, force: true });
   fs.cpSync(source.skillDir, destDir, { recursive: true, filter: skipJunk });
   const files = countFiles(destDir);
